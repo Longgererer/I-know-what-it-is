@@ -1,0 +1,88 @@
+@import './base.scss';
+@import './mixin.scss';
+
+// tag
+a {
+  text-decoration: none;
+}
+ul {
+  list-style: none;
+}
+
+// public
+.pointer {
+  cursor: pointer;
+}
+.borbox {
+  box-sizing: border-box;
+}
+.hidden {
+  overflow: hidden;
+}
+.circle {
+  border-radius: 50%;
+}
+.noselect {
+  user-select: none;
+}
+.box-shadow {
+  box-shadow: $PrimaryShadow;
+}
+
+// text
+.text-large {
+  font-size: 20px;
+}
+.text-medium {
+  font-size: 16px;
+}
+.text-small {
+  font-size: 14px;
+}
+.text-shadow {
+  text-shadow: $TextShadow !important;
+}
+.text-bold {
+  font-weight: bold;
+}
+
+// flex
+.flex {
+  display: flex;
+}
+.inflex {
+  display: inline-flex;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-clo {
+  flex-direction: column;
+}
+.flex-ai {
+  align-items: center;
+}
+.flex-aend {
+  align-items: flex-end;
+}
+.flex-jcc {
+  justify-content: center;
+}
+.flex-jcb {
+  justify-content: space-between;
+}
+.flex-jca {
+  justify-content: space-around;
+}
+.flex-jend {
+  justify-content: flex-end;
+}
+.flex-nw {
+  flex-wrap: nowrap;
+}
+.flex-w {
+  flex-wrap: wrap;
+}
+.flex-sh {
+  flex-shrink: 0;
+}
