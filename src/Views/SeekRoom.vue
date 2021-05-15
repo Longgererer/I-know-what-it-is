@@ -6,7 +6,9 @@
         <FlatInput v-model:value="roomPassword" size="small" type="password" />
         <div class="btn-opt flex flex-jend">
           <FlatButton size="small" type="cancel" @click="modalCallback.cancel()">取消</FlatButton>
-          <FlatButton size="small" :disabled="roomPassword" @click="modalCallback.confirm()">验证</FlatButton>
+          <FlatButton size="small" :loading="showEnterLoading" :disabled="!roomPassword" @click="modalCallback.confirm()"
+            >验证</FlatButton
+          >
         </div>
       </div>
     </FlatModal>
@@ -84,8 +86,15 @@ export default defineComponent({
     }
     const { currentItem, selectItem, searchOpt } = handleSearchOpt()
     const { roomInfoList, isListLoading, loadRoomList } = handleRoomInfoList()
-    const { currentSelectedRoom, showPwdModal, roomPassword, modalCallback, beforeEnterRoom, selectRoom } =
-      handleEnterRoom()
+    const {
+      currentSelectedRoom,
+      showEnterLoading,
+      showPwdModal,
+      roomPassword,
+      modalCallback,
+      beforeEnterRoom,
+      selectRoom,
+    } = handleEnterRoom()
 
     onMounted(() => {
       loadRoomList(searchOpt)
@@ -114,6 +123,7 @@ export default defineComponent({
       modalCallback,
       beforeEnterRoom,
       selectRoom,
+      showEnterLoading,
     }
   },
   components: {
@@ -195,17 +205,8 @@ function handleEnterRoom() {
   }
   const currentSelectedRoom: RoomInfo | {} = reactive({})
   const showPwdModal: Ref<boolean> = ref(false)
+  const showEnterLoading: Ref<boolean> = ref(false)
   const roomPassword: Ref<string> = ref('')
-  const modalCallback: ModalCallback = {
-    confirm: () => {
-      showPwdModal.value = false
-      roomPassword.value = ''
-    },
-    cancel: () => {
-      showPwdModal.value = false
-      roomPassword.value = ''
-    },
-  }
   const selectRoom = (room: RoomInfo): void => {
     Object.assign(currentSelectedRoom, room)
   }
@@ -213,7 +214,22 @@ function handleEnterRoom() {
     if ((currentSelectedRoom as RoomInfo).accessPassword) showPwdModal.value = true
   }
   const enterRoom = (): void => {
+    showEnterLoading.value = true
     // 进入房间
+    setTimeout(() => {
+      showPwdModal.value = false
+      roomPassword.value = ''
+      showEnterLoading.value = false
+    }, 3000)
+  }
+  const modalCallback: ModalCallback = {
+    confirm: () => {
+      enterRoom()
+    },
+    cancel: () => {
+      showPwdModal.value = false
+      roomPassword.value = ''
+    },
   }
   return {
     currentSelectedRoom,
@@ -222,6 +238,7 @@ function handleEnterRoom() {
     modalCallback,
     beforeEnterRoom,
     selectRoom,
+    showEnterLoading,
   }
 }
 </script>
