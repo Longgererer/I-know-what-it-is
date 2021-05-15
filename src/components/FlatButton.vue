@@ -1,7 +1,8 @@
 <template>
-  <button id="FlatButton" class="hidden borbox" :class="`btn-${size} btn-${type}`">
+  <button id="FlatButton" class="hidden borbox" :class="`btn-${size} btn-${type}`" :disabled="disabled">
     <div class="disabled-screen" v-show="disabled"></div>
     <div class="btn-content flex flex-jcc flex-ai pointer">
+      <i class="icon iconfont icon-Loading" v-show="loading"></i>
       <i class="icon iconfont text-shadow" v-if="showIcon" :class="`${icon}`"></i>
       <div class="content text-small text-shadow">
         <slot></slot>
@@ -25,6 +26,10 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(_, { attrs }) {
     return {
@@ -35,6 +40,14 @@ export default defineComponent({
 })
 </script>
 <style lang="scss" scope>
+@include Keyframes(myRotate) {
+  0% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 #FlatButton {
   width: 100%;
   outline: none;
@@ -55,12 +68,18 @@ export default defineComponent({
       color: $White;
       margin-right: 12px;
     }
+    .icon-Loading {
+      display: block;
+      font-size: 14px;
+      @include Animation(myRotate, 1s, infinite, linear);
+    }
   }
 }
 .btn-primary {
   color: $White;
   border: none;
   .btn-content {
+    color: inherit;
     background-color: $Primary;
     &:hover {
       background-color: $PrimaryHover;
@@ -73,6 +92,7 @@ export default defineComponent({
   color: $LightGray;
   .btn-content {
     background-color: $White;
+    color: inherit;
     &:hover {
       background-color: $ShallowWhite;
     }
