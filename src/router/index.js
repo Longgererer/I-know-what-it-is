@@ -3,6 +3,7 @@ import Home from '/@/views/Home.vue'
 import HomeMenu from '/@views/HomeMenu.vue'
 import NewRoom from '/@views/NewRoom.vue'
 import SeekRoom from '/@views/SeekRoom.vue'
+import Room from '/@views/Room.vue'
 
 const Router = createRouter({
   history: createWebHashHistory(),
@@ -25,8 +26,13 @@ const Router = createRouter({
         path: '/seek',
         name: 'SeekRoom',
         component: SeekRoom
-      }
+      },
     ]
+  },
+  {
+    path: '/room/:roomId',
+    name: 'Room',
+    component: Room
   }]
 })
 
