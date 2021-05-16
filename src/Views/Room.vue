@@ -13,9 +13,9 @@
             <i class="icon iconfont icon-refresh pointer"></i>
           </div>
           <div class="board-area hidden">
-            <Board />
+            <Board :lineWidth="diameter" :penColor="brushColor" :cursorType="'pen'" ref="board" />
           </div>
-          <div class="bin flex flex-ai flex-jcc pointer" title="清除画布">
+          <div class="bin flex flex-ai flex-jcc pointer" title="清除画布" @click="clearBoard">
             <i class="icon iconfont icon-bin"></i>
           </div>
         </div>
@@ -24,7 +24,7 @@
             class="eraser borbox circle flex flex-ai flex-jcc pointer"
             :class="useEraser && 'eraser-active'"
             title="橡皮擦"
-            @click="useEraser = !useEraser"
+            @click="selectEraser"
           >
             <i class="icon iconfont icon-eraser"></i>
           </div>
@@ -40,7 +40,7 @@
             <div class="preview-pack flex flex-ai flex-jcc flex-clo">
               <div
                 class="width-preview circle"
-                :style="{ width: `${lineWidth * 2}px`, height: `${lineWidth * 2}px`, backgroundColor: brushColor }"
+                :style="{ width: `${diameter}px`, height: `${diameter}px`, backgroundColor: brushColor }"
               ></div>
             </div>
             <FlatSlider class="slider" :min="2" :max="10" v-model:value="lineWidth" />
@@ -51,7 +51,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, Ref } from 'vue'
+import { defineComponent, ref, Ref, computed, ComputedRef } from 'vue'
 import FlatTimer from '/@components/FlatTimer.vue'
 import FlatSlider from '/@components/FlatSlider.vue'
 import Board from '/@components/Board.vue'
@@ -59,14 +59,23 @@ import { colorList } from '/@utils/publicData'
 export default defineComponent({
   name: 'Room',
   setup() {
-    const { useEraser, brushColor, lineWidth } = handleBrushOpt()
+    const board = ref<InstanceType<typeof Board>>()
+    const { useEraser, brushColor, lineWidth, selectEraser } = handleBrushOpt()
     const { currentQuestion } = handleQuestions()
+    const diameter: ComputedRef<number> = computed(() => lineWidth.value * 2)
+    const clearBoard = () => {
+      board.value.clearCanvas()
+    }
     return {
       brushColor,
       colorList,
       lineWidth,
       useEraser,
+      selectEraser,
       currentQuestion,
+      diameter,
+      board,
+      clearBoard,
     }
   },
   components: {
@@ -87,10 +96,15 @@ function handleBrushOpt() {
   const useEraser: Ref<boolean> = ref(false)
   const brushColor: Ref<string> = ref(colorList[0])
   const lineWidth: Ref<number> = ref(4)
+  const selectEraser = () => {
+    useEraser.value = !useEraser.value
+    brushColor.value = '#F2F2F2'
+  }
   return {
     lineWidth,
     brushColor,
     useEraser,
+    selectEraser,
   }
 }
 </script>
@@ -124,6 +138,7 @@ function handleBrushOpt() {
       position: absolute;
       left: 50%;
       transform: translateX(-50%) translateY(-50%);
+      z-index: 10;
     }
     .board,
     .brush-opt {
