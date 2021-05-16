@@ -1,7 +1,7 @@
 <template>
-  <div id="FlatSlider" ref="slider" @click="movePosition" class="pointer">
-    <div class="cover" :style="{ width: `${((value - min) / (max - min)) * 100}%` }">
-      <div class="cover-btn" @mousedown.stop="onButtonDown"></div>
+  <div id="FlatSlider" ref="slider" @click.self="movePosition" class="pointer">
+    <div class="cover" @click.self="movePosition" :style="{ width: `${((value - min) / (max - min)) * 100}%` }">
+      <div class="cover-btn" @mousedown.stop.prevent="onButtonDown"></div>
     </div>
   </div>
 </template>
