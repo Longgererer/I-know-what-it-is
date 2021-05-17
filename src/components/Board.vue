@@ -3,13 +3,18 @@
     <canvas
       ref="canvas"
       class="canvas"
-      :class="cursorType === 'default' && 'cursor-default'"
+      :class="{ 'cursor-default': cursorType === 'default' }"
       @mousemove="onMouseMove"
       @mousedown="onMouseDown"
       @mouseup="onMouseUp"
       @mouseleave="onMouseLeave"
+      @mouseenter="onMouseEnter"
     ></canvas>
-    <div class="cursor circle" :class="`cursor-${cursorType}`" :style="cursorStyle"></div>
+    <div
+      class="cursor circle"
+      :class="{ [`cursor-${cursorType}`]: true, 'cursor-drawing': isDrawing, 'cursor-active': showBrushCursor }"
+      :style="cursorStyle"
+    ></div>
   </div>
 </template>
 <script lang="ts">
@@ -35,6 +40,7 @@ export default defineComponent({
     const canvasSize = reactive({ width: 0, height: 0 })
     const ctx: Ref<null | CanvasRenderingContext2D> = ref(null)
     const isDrawing: Ref<boolean> = ref(false)
+    const showBrushCursor: Ref<boolean> = ref(false)
     const starPosition = reactive({ x: 0, y: 0 })
     const init = (ctx: CanvasRenderingContext2D) => {
       const { width, height } = canvasSize
@@ -64,6 +70,9 @@ export default defineComponent({
       const { offsetX: x, offsetY: y } = event
       Object.assign(starPosition, { x, y })
     }
+    const onMouseEnter = () => {
+      showBrushCursor.value = true
+    }
     const onMouseDown = () => {
       isDrawing.value = true
     }
@@ -72,6 +81,7 @@ export default defineComponent({
     }
     const onMouseLeave = () => {
       isDrawing.value = false
+      showBrushCursor.value = false
     }
 
     // lifecycle
@@ -101,9 +111,12 @@ export default defineComponent({
       onMouseDown,
       onMouseUp,
       onMouseLeave,
+      onMouseEnter,
       starPosition,
       cursorStyle,
       clearCanvas,
+      isDrawing,
+      showBrushCursor,
     }
   },
 })
@@ -125,6 +138,14 @@ export default defineComponent({
     top: 0;
     pointer-events: none;
     user-select: none;
+    opacity: 0;
+    @include Transition(opacity, 0.3s, ease);
+  }
+  .cursor-active {
+    opacity: 1;
+  }
+  .cursor-drawing {
+    border: 2px solid $White;
   }
   .cursor-default {
     cursor: default;
