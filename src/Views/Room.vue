@@ -2,8 +2,20 @@
   <div id="Room" class="flex flex-clo flex-jcc flex-ai">
     <div class="flex">
       <div class="side-view">
-        <div class="user"></div>
-        <div class="chat"></div>
+        <div class="user-view borbox">
+          <div class="user-list borbox hidden">
+            <User v-for="item in userList" :key="item.id" :userInfo="item" class="user" />
+          </div>
+        </div>
+        <div class="chat-box borbox hidden">
+          <div class="chat-list borbox hidden">
+            <Chat v-for="item in chatList" :key="item.id" :chatInfo="item" class="chat" />
+          </div>
+          <div class="chat-input flex flex-ai">
+            <FlatInput v-model:value="chatText" :placeholder="'说出你的答案'" size="small" class="flat-input" />
+            <FlatButton size="small">回答</FlatButton>
+          </div>
+        </div>
       </div>
       <div class="drawing">
         <FlatTimer :size="50" class="flat-timer" />
@@ -51,10 +63,14 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, Ref, computed, ComputedRef } from 'vue'
+import { defineComponent, ref, Ref, computed, ComputedRef, reactive } from 'vue'
 import FlatTimer from '/@components/FlatTimer.vue'
 import FlatSlider from '/@components/FlatSlider.vue'
+import FlatInput from '/@components/FlatInput.vue'
+import FlatButton from '/@components/FlatButton.vue'
 import Board from '/@components/Board.vue'
+import User from '/@components/User.vue'
+import Chat from '/@components/Chat.vue'
 import { colorList } from '/@utils/publicData'
 export default defineComponent({
   name: 'Room',
@@ -62,10 +78,14 @@ export default defineComponent({
     const board = ref<InstanceType<typeof Board>>()
     const { useEraser, brushColor, lineWidth, selectEraser } = handleBrushOpt()
     const { currentQuestion } = handleQuestions()
+    const { userList, getUserList } = handleUsers()
+    const { chatList, getChatInfo, chatText } = handleChats()
     const diameter: ComputedRef<number> = computed(() => lineWidth.value * 2)
     const clearBoard = () => {
       board.value.clearCanvas()
     }
+    getUserList()
+    getChatInfo()
     return {
       brushColor,
       colorList,
@@ -76,14 +96,78 @@ export default defineComponent({
       diameter,
       board,
       clearBoard,
+      userList,
+      getUserList,
+      chatList,
+      getChatInfo,
+      chatText,
     }
   },
   components: {
     FlatTimer,
     FlatSlider,
+    FlatInput,
+    FlatButton,
     Board,
+    User,
+    Chat,
   },
 })
+function handleUsers() {
+  type User = {
+    id: number
+    avatar: string
+    name: string
+    point: number
+  }
+  const userList: User[] = reactive([])
+  const getUserList = () => {
+    userList.push(
+      ...[
+        { id: 0, avatar: '14EWQE12E12EEQEQWEQE', name: 'Lee', point: 54 },
+        { id: 1, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+        { id: 2, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+        { id: 3, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+        { id: 4, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+        { id: 5, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+        { id: 6, avatar: '324h32uierhq98d21he', name: 'Rich', point: 105 },
+      ]
+    )
+  }
+  return {
+    userList,
+    getUserList,
+  }
+}
+function handleChats() {
+  type Chat = {
+    id: number
+    text: string
+    name: string
+    avatar: string
+  }
+  const chatList: Chat[] = reactive([])
+  const getChatInfo = () => {
+    chatList.push(
+      ...[
+        { id: 0, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 1, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 2, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 3, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 4, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 5, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+        { id: 6, text: '大象', name: 'Lee', avatar: '14EWQE12E12EEQEQWEQE' },
+      ]
+    )
+  }
+  const chatText: Ref<string> = ref('')
+
+  return {
+    chatList,
+    getChatInfo,
+    chatText,
+  }
+}
 function handleQuestions() {
   const currentQuestion: Ref<string> = ref('苹果')
   const getNextQuestion = () => {}
@@ -108,27 +192,73 @@ function handleBrushOpt() {
   }
 }
 </script>
-<style lang="scss" scope>
+<style lang="scss" scoped>
 #Room {
   width: 100%;
   height: calc(100% - 50px);
   .side-view {
     width: 200px;
     margin-right: 10px;
-    .user,
-    .chat {
+    .user-view,
+    .chat-box {
       background-color: $White;
       box-shadow: $PrimaryShadow;
       border-radius: 20px;
     }
-    .user {
+    .user-view {
       width: 100%;
-      height: 280px;
+      height: 260px;
       margin-bottom: 10px;
+      padding: 15px 0;
+      .user-list {
+        height: 100%;
+        padding: 0 15px;
+        overflow-y: auto;
+        .user {
+          &:not(:last-child) {
+            margin-bottom: 15px;
+          }
+        }
+      }
     }
-    .chat {
+    .chat-box {
       width: 100%;
-      height: 250px;
+      height: 270px;
+      padding: 10px;
+      .chat-list {
+        height: 200px;
+        background-color: #f8f8f8;
+        border-radius: 10px;
+        padding: 15px 10px;
+        overflow-y: auto;
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+        &::-webkit-scrollbar-track {
+          background-color: transparent;
+        }
+        &::-webkit-scrollbar-thumb {
+          background-color: #f0f0f0;
+          border-radius: 8px;
+          border: 1px solid transparent;
+          padding: 5px;
+        }
+        &::-webkit-scrollbar-thumb:hover {
+          background-color: #5cdbd3;
+        }
+        .chat {
+          &:not(:last-child) {
+            margin-bottom: 10px;
+          }
+        }
+      }
+      .chat-input {
+        margin-top: 10px;
+        .flat-input {
+          width: 120px;
+          margin-right: 5px;
+        }
+      }
     }
   }
   .drawing {
