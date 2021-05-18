@@ -28,3 +28,8 @@
     @content;
   }
 }
+@mixin LargeScreen {
+  @media (min-height: 900px) {
+    @content;
+  }
+}

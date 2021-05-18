@@ -27,4 +27,10 @@ export default defineComponent({
   margin-bottom: 15px;
   padding: 35px 45px;
 }
+@include LargeScreen {
+  #Home{
+    width: 900px;
+    height: 550px;
+  }
+}
 </style>

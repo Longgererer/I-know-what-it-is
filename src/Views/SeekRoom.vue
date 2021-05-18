@@ -255,7 +255,7 @@ function handleEnterRoom() {
   }
 }
 </style>
-<style lang="scss" scope>
+<style lang="scss" scoped>
 #SeekRoom {
   width: 100%;
   height: 100%;

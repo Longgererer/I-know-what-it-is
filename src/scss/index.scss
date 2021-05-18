@@ -28,6 +28,11 @@ ul {
 .box-shadow {
   box-shadow: $PrimaryShadow;
 }
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 // text
 .text-large {
@@ -38,6 +43,9 @@ ul {
 }
 .text-small {
   font-size: 14px;
+}
+.text-mini {
+  font-size: 12px;
 }
 .text-shadow {
   text-shadow: $TextShadow !important;

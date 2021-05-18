@@ -145,6 +145,7 @@ function handleChats() {
     text: string
     name: string
     avatar: string
+    type: string // 'success'|''
   }
   const chatList: Chat[] = reactive([])
   const getChatInfo = () => {

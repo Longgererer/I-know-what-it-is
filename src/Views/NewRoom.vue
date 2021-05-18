@@ -3,7 +3,7 @@
     <div class="header flex">
       <div class="back flex flex-1 flex-ai text-shadow">
         <i class="icon iconfont icon-left pointer" @click="jumpToTarget('/')"></i>
-        <span class="text-bold text-large">创建房间</span>
+        <span class="text-large">创建房间</span>
       </div>
     </div>
     <div class="room-filter flex flex-jcb">
@@ -106,6 +106,21 @@ function handleRoomInfo(): RoomInfoHandler {
   }
 }
 </script>
+
+<style lang="scss">
+@include LargeScreen {
+  #NewRoom {
+    #FlatInput {
+      .title {
+        font-size: 18px;
+      }
+      .input-area {
+        font-size: 18px;
+      }
+    }
+  }
+}
+</style>
 <style lang="scss" scope>
 #NewRoom {
   width: 100%;
@@ -182,6 +197,27 @@ function handleRoomInfo(): RoomInfoHandler {
       }
       .create-btn {
         margin-top: 32px;
+      }
+    }
+  }
+}
+@include LargeScreen {
+  #NewRoom {
+    .header {
+      .back {
+        i {
+          font-size: 28px;
+          margin-right: 10px;
+        }
+        span {
+          font-size: 26px;
+        }
+      }
+    }
+    .room-filter {
+      margin-top: 50px;
+      .room-info{
+        width: 350px;
       }
     }
   }

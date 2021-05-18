@@ -13,9 +13,13 @@
         </div>
         <FlatInput :title="'你的昵称'" v-model:value="nickname" />
       </div>
-      <div class="room-options">
-        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-new'" @click="jumpToTarget('/create')">新建房间</FlatButton>
-        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-room'" @click="jumpToTarget('/seek')">查看房间</FlatButton>
+      <div class="room-options flex flex-clo flex-jcb">
+        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-new'" @click="jumpToTarget('/create')"
+          >新建房间</FlatButton
+        >
+        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-room'" @click="jumpToTarget('/seek')"
+          >查看房间</FlatButton
+        >
         <FlatButton class="flat-button" :showIcon="true" :icon="'icon-quick'">快速开始</FlatButton>
       </div>
     </div>
@@ -68,7 +72,34 @@ function handleAvatarUrl(): AvatarInfo {
 }
 </script>
 
-<style lang="scss" scope>
+<style lang="scss">
+@include LargeScreen {
+  #HomeMenu {
+    .home-content {
+      #FlatInput {
+        .title {
+          font-size: 18px;
+        }
+        .input-area {
+          font-size: 18px;
+        }
+      }
+      #FlatButton {
+        height: 50px;
+        .btn-content {
+          i{
+            font-size: 28px;
+          }
+          .content {
+            font-size: 20px !important;
+          }
+        }
+      }
+    }
+  }
+}
+</style>
+<style lang="scss" scoped>
 #HomeMenu {
   width: 100%;
   height: 100%;
@@ -109,10 +140,34 @@ function handleAvatarUrl(): AvatarInfo {
     }
     .room-options {
       width: 250px;
-      .flat-button {
-        &:not(:last-child) {
-          margin-bottom: 44px;
+    }
+  }
+}
+@include LargeScreen {
+  #HomeMenu {
+    .logo {
+      margin-bottom: 100px;
+      img {
+        width: 350px;
+      }
+    }
+    .home-content {
+      .profile {
+        width: 350px;
+        .img-box {
+          width: 180px;
+          height: 180px;
+          .refresh {
+            width: 50px;
+            height: 50px;
+            i {
+              font-size: 32px;
+            }
+          }
         }
+      }
+      .room-options {
+        width: 350px;
       }
     }
   }
