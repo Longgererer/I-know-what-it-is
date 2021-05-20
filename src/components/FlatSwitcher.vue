@@ -50,14 +50,14 @@ export default defineComponent({
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 16px;
-      height: 16px;
-      border-radius: 16px;
+      width: calc(50% - 4px);
+      height: calc(100% - 4px);
+      border-radius: calc(100%);
       background-color: $White;
       transition: all 0.3s ease;
     }
     &:active::after {
-      width: 25px;
+      width: calc(50% + 5px);
     }
   }
 }

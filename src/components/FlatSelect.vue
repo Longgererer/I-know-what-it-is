@@ -104,7 +104,7 @@ export default defineComponent({
     color: $Primary;
     padding-top: 2px;
     i {
-      @include Transition(all, 5s, ease);
+      @include Transition(all, 0.3s, ease);
       display: block;
     }
     .arrow-active {

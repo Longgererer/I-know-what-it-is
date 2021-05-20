@@ -1,6 +1,6 @@
 <template>
   <div id="FlatNumberInput" class="flex">
-    <input type="text" :value="value" class="text-medium" />
+    <input type="text" :value="value" class="text-medium borbox" />
     <div class="num-btn flex flex-clo">
       <button class="up flex-1 pointer" @click="handleUp"><i class="icon iconfont icon-down"></i></button>
       <button class="down flex-1 pointer" @click="handleDown"><i class="icon iconfont icon-down"></i></button>
@@ -44,9 +44,10 @@ export default defineComponent({
 </script>
 <style lang="scss" scope>
 #FlatNumberInput {
+  height: 36px;
   input {
     width: 60px;
-    height: 32px;
+    height: 100%;
     outline: none;
     color: $Gray;
     border: 2px solid $Primary;
@@ -62,6 +63,7 @@ export default defineComponent({
       border: none;
       background-color: transparent;
       border: 2px solid $Primary;
+      height: 50%;
       i {
         font-size: 12px;
         color: $Gray;

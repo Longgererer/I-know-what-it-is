@@ -50,7 +50,7 @@ export default defineComponent({
   },
 })
 </script>
-<style lang="scss" scope>
+<style lang="scss" scoped>
 #FlatInput {
   width: 100%;
   .title {

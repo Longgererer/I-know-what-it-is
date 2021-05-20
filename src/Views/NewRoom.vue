@@ -7,7 +7,7 @@
       </div>
     </div>
     <div class="room-filter flex flex-jcb">
-      <div class="room-info">
+      <div class="room-info flex flex-clo flex-jcb">
         <FlatInput v-model:value="roomInfo.name" :title="'房间名'" />
         <div class="access-pwd flex flex-ai flex-jcb">
           <span class="title">设置密码</span>
@@ -36,7 +36,7 @@
             <i class="icon iconfont icon-success" v-show="roomInfo.type === item.id"></i>
           </div>
         </div>
-        <div class="other-type text-bold text-small flex flex-ai flex-jcc">其他类型尽情期待</div>
+        <div class="other-type text-small flex flex-ai flex-jcc">其他类型尽情期待</div>
         <FlatButton class="create-btn">创建房间</FlatButton>
       </div>
     </div>
@@ -112,10 +112,25 @@ function handleRoomInfo(): RoomInfoHandler {
   #NewRoom {
     #FlatInput {
       .title {
-        font-size: 18px;
+        font-size: 20px;
       }
       .input-area {
-        font-size: 18px;
+        font-size: 20px;
+      }
+    }
+    #FlatSwitcher {
+      width: 60px;
+      height: 30px;
+    }
+    #FlatButton {
+      height: 50px;
+      .btn-content {
+        i {
+          font-size: 28px;
+        }
+        .content {
+          font-size: 20px !important;
+        }
       }
     }
   }
@@ -137,17 +152,16 @@ function handleRoomInfo(): RoomInfoHandler {
   }
   .room-filter {
     width: 100%;
-    margin-top: 32px;
+    height: calc(100% - 32px);
+    margin-top: 30px;
     .room-info {
       width: 250px;
       .access-pwd {
-        margin-top: 30px;
         .title {
           color: $Primary;
         }
       }
       .password {
-        margin-top: 30px;
         position: relative;
         .screen {
           position: absolute;
@@ -160,7 +174,6 @@ function handleRoomInfo(): RoomInfoHandler {
         }
       }
       .player-num {
-        margin-top: 30px;
         .title {
           color: $Primary;
         }
@@ -216,8 +229,41 @@ function handleRoomInfo(): RoomInfoHandler {
     }
     .room-filter {
       margin-top: 50px;
-      .room-info{
-        width: 350px;
+      .room-info {
+        width: 320px;
+        .access-pwd {
+          .title {
+            font-size: 20px;
+          }
+        }
+        .player-num {
+          .title {
+            font-size: 20px;
+          }
+        }
+      }
+      .room-type {
+        .title {
+          font-size: 20px;
+        }
+        .type-list {
+          margin-top: 30px;
+          gap: 20px;
+          grid-template-columns: 200px 200px;
+          .type {
+            height: 50px;
+            span {
+              font-size: 18px !important;
+            }
+          }
+        }
+        .other-type {
+          margin-top: 30px;
+          font-size: 18px;
+        }
+        .create-btn {
+          margin-top: 110px;
+        }
       }
     }
   }

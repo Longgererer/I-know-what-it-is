@@ -2,11 +2,14 @@
   <div id="SeekRoom" class="noselect">
     <FlatModal :showTitle="false" :visible="showPwdModal">
       <div class="password-modal flex flex-clo">
-        <span class="text-small">请输入房间密码：</span>
-        <FlatInput v-model:value="roomPassword" size="small" type="password" />
+        <FlatInput v-model:value="roomPassword" size="small" type="password" title="请输入房间密码："/>
         <div class="btn-opt flex flex-jend">
-          <FlatButton size="small" type="cancel" @click="modalCallback.cancel()">取消</FlatButton>
-          <FlatButton size="small" :loading="showEnterLoading" :disabled="!roomPassword" @click="modalCallback.confirm()"
+          <FlatButton size="small" type="cancel" @click="modalCallback.cancel">取消</FlatButton>
+          <FlatButton
+            size="small"
+            :loading="showEnterLoading"
+            :disabled="!roomPassword"
+            @click="modalCallback.confirm"
             >验证</FlatButton
           >
         </div>
@@ -15,7 +18,7 @@
     <div class="header flex">
       <div class="back flex flex-1 flex-ai text-shadow">
         <i class="icon iconfont icon-left pointer" @click="jumpToTarget('/')"></i>
-        <span class="text-bold text-large">查看房间</span>
+        <span class="text-large">查看房间</span>
       </div>
       <div class="filter flex">
         <div class="room-name">
@@ -254,6 +257,47 @@ function handleEnterRoom() {
     }
   }
 }
+@include LargeScreen {
+  #FlatInput {
+    .title {
+      font-size: 20px !important;
+    }
+    .input-area {
+      font-size: 16px !important;
+    }
+  }
+  #FlatSelect {
+    .input-area {
+      input {
+        font-size: 16px !important;
+      }
+    }
+  }
+  #FlatButton {
+    height: 50px;
+    .btn-content {
+      i {
+        font-size: 28px;
+      }
+      .content {
+        font-size: 20px !important;
+      }
+    }
+  }
+  #FlatModal {
+    #FlatInput {
+      .title {
+        font-size: 18px !important;
+      }
+    }
+    #FlatButton {
+      height: 40px !important;
+      .content {
+        font-size: 18px !important;
+      }
+    }
+  }
+}
 </style>
 <style lang="scss" scoped>
 #SeekRoom {
@@ -321,6 +365,36 @@ function handleEnterRoom() {
     margin-top: 30px;
     .enter-btn {
       width: 250px;
+    }
+  }
+}
+@include LargeScreen {
+  #SeekRoom {
+    .header {
+      .back {
+        i {
+          font-size: 28px;
+          margin-right: 10px;
+        }
+        span {
+          font-size: 26px;
+        }
+      }
+    }
+    .result-box {
+      margin-top: 50px;
+      .result-head {
+        font-size: 18px;
+        grid-template-columns: 160px 160px 400px auto;
+      }
+    }
+    .result-list {
+      height: 300px !important;
+      .room {
+        grid-template-columns: 160px 160px 400px auto !important;
+        height: 50px !important;
+        font-size: 16px;
+      }
     }
   }
 }
