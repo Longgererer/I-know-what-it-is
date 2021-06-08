@@ -1,14 +1,14 @@
 <template>
   <div id="HomeMenu" class="flex flex-clo flex-ai">
     <div class="logo">
-      <img src="../assets/logo.svg" alt="" />
+      <img src="../assets/logo.svg" alt="" ref="avatar" />
     </div>
     <div class="home-content flex flex-jcb">
       <div class="profile flex flex-clo flex-ai">
         <div class="img-box">
-          <img :src="avatarUrl" class="circle" alt="" />
+          <img :src="processedUrl" class="circle" alt="" @load="refreshing = false" />
           <div class="refresh pointer circle flex flex-ai flex-jcc" @click="refreshUrl">
-            <i class="icon iconfont icon-refresh text-shadow"></i>
+            <i class="icon iconfont icon-refresh text-shadow" :class="refreshing ? 'refreshing' : ''"></i>
           </div>
         </div>
         <FlatInput :title="'你的昵称'" v-model:value="nickname" />
@@ -20,14 +20,14 @@
         <FlatButton class="flat-button" :showIcon="true" :icon="'icon-room'" @click="jumpToTarget('/seek')"
           >查看房间</FlatButton
         >
-        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-quick'">快速开始</FlatButton>
+        <FlatButton class="flat-button" :showIcon="true" :icon="'icon-quick'" @click="seekGame">快速开始</FlatButton>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, Ref } from 'vue'
+import { defineComponent, ref, Ref, computed, ComputedRef } from 'vue'
 import { useRouter, Router } from 'vue-router'
 import AvatarGenerator from '/@utils/avatarGenerator'
 import FlatInput from '/@components/FlatInput.vue'
@@ -39,9 +39,12 @@ export default defineComponent({
     const jumpToTarget: Function = (target: string): void => {
       router.replace({ path: target })
     }
-    const { avatarUrl, refreshUrl } = handleAvatarUrl()
+    const { avatarUrl, refreshing, processedUrl, refreshUrl } = handleAvatarUrl()
     const { nickname } = handleNickname()
-    return { jumpToTarget, avatarUrl, refreshUrl, nickname }
+    function seekGame(){
+      
+    }
+    return { jumpToTarget, avatarUrl, processedUrl, refreshing, refreshUrl, nickname,seekGame }
   },
   components: {
     FlatInput,
@@ -58,14 +61,21 @@ function handleNickname(): { nickname: Ref<string> } {
 
 interface AvatarInfo {
   avatarUrl: Ref<string>
+  refreshing: Ref<boolean>
+  processedUrl: ComputedRef<string>
   refreshUrl: Function
 }
 function handleAvatarUrl(): AvatarInfo {
   const ag: any = new AvatarGenerator()
+  const refreshing: Ref = ref<boolean>(false)
   const avatarUrl: Ref = ref<string>(ag.getAvatarSVGUrl())
+  const processedUrl: ComputedRef<string> = computed(() => `https://api.multiavatar.com/${avatarUrl.value}.svg`)
   return {
     avatarUrl,
+    refreshing,
+    processedUrl,
     refreshUrl: (): void => {
+      refreshing.value = true
       avatarUrl.value = ag.createAvatarId().getAvatarSVGUrl()
     },
   }
@@ -87,7 +97,7 @@ function handleAvatarUrl(): AvatarInfo {
       #FlatButton {
         height: 50px;
         .btn-content {
-          i{
+          i {
             font-size: 28px;
           }
           .content {
@@ -100,6 +110,17 @@ function handleAvatarUrl(): AvatarInfo {
 }
 </style>
 <style lang="scss" scoped>
+@include Keyframes(rotate) {
+  0% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-45deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 #HomeMenu {
   width: 100%;
   height: 100%;
@@ -135,6 +156,9 @@ function handleAvatarUrl(): AvatarInfo {
           i {
             font-size: 24px;
           }
+        }
+        .refreshing {
+          @include Animation(rotate, 2s, infinite, ease);
         }
       }
     }
