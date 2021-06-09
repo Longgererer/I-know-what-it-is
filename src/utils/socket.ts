@@ -1,47 +1,61 @@
+import { socketMsgT } from './types'
+
 export default class Socket {
   // 要连接的URL
-  private url: string = ''
+  url: string = ''
   // 一个协议字符串或一个协议字符串数组。
   // 这些字符串用来指定子协议，这样一个服务器就可以实现多个WebSocket子协议
-  private protocols: string | string[] = ''
+  protocols: string | string[] = ''
   // WebSocket 实例
-  private ws: WebSocket
+  ws: WebSocket | null = null
   // 是否在重连中
-  private isReconnectionLoading: boolean = false
+  isReconnectionLoading: boolean = false
   // 延时重连的 id
-  private timeId: number | null = null
+  timeId: number | null = null
   // 是否是用户手动关闭连接
-  private isCustomClose: boolean = false
+  isCustomClose: boolean = false
   // 错误消息队列
-  private errorStack: Error[] = []
+  errorStack: Error[] = []
   // 事件管理
-  private events: { [key: string]: [] } = {}
+  events: { [key: string]: [] } = {}
+  instance: Socket | undefined
 
   constructor(url: string) {
-    this.url = url
-    this.ws = new WebSocket(url)
-    this.monitorWs()
+    if (!this.instance) {
+      this.url = url
+      this.ws = new WebSocket(url)
+      this.monitorWs()
+      this.instance = this
+    }
+    return this
   }
-  private monitorWs() {
+  monitorWs() {
     const { ws, event } = this
-    ws.onopen = (e) => {
+    ws!.onopen = (e) => {
       console.log(e)
     }
-    ws.onmessage = ({ data }) => {
+    ws!.onmessage = ({ data }) => {
       console.log(data)
     }
-    ws.onclose = (e) => {
+    ws!.onclose = (e) => {
       console.log(e)
     }
-    ws.onerror = (e) => {
+    ws!.onerror = (e) => {
       console.log(e)
     }
   }
-  send(){
-    this.ws.send('123')
+  send(msg: socketMsgT): void {
+    this.ws!.send(JSON.stringify(msg))
   }
-  event(name: string, data: any) {
+  event(name: string, data: any): void {
     let eventsArray = this.events[name]
     eventsArray && eventsArray.forEach((fn: Function) => fn(data))
+  }
+  typeHandler(type: string): void {
+    switch (type) {
+      case 'initUser': {
+
+      }
+    }
   }
 }
