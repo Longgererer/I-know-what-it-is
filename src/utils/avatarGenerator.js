@@ -21,7 +21,7 @@ class AvatarGenerator {
     return this
   }
   getAvatarSVGUrl () {
-    return `https://api.multiavatar.com/${this.id}.svg`
+    return this.id
   }
 }
 
