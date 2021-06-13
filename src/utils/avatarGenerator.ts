@@ -1,6 +1,8 @@
 import { getRandomNumber } from '/@utils/tools'
 
 class AvatarGenerator {
+  id: string = ''
+  static instance: null | AvatarGenerator = null
   constructor() {
     if (!AvatarGenerator.instance) {
       Object.assign(this, {
@@ -11,16 +13,16 @@ class AvatarGenerator {
     }
     return AvatarGenerator.instance
   }
-  createAvatarId () {
+  createAvatarId() {
     // 获取头像id，由6个两位数的数字（范围为00-47）组成
-    const numList = new Array(6).fill(0)
+    const numList: Array<number> = new Array(6).fill(0)
     this.id = numList.map(() => {
-      let num = getRandomNumber(0, 47, {})
+      let num: number = getRandomNumber(0, 47, {})
       return `${num < 10 ? '0' : ''}${num}`
     }).join('')
     return this
   }
-  getAvatarSVGUrl () {
+  getAvatarSVGUrl() {
     return this.id
   }
 }
