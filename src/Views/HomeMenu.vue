@@ -11,7 +11,7 @@
             <i class="icon iconfont icon-refresh text-shadow" :class="refreshing ? 'refreshing' : ''"></i>
           </div>
         </div>
-        <FlatInput :title="'你的昵称'" v-model:value="nickname" />
+        <FlatInput :title="'你的昵称'" v-model:value="nickname" :placeholder="namePlaceholder"/>
       </div>
       <div class="room-options flex flex-clo flex-jcb">
         <FlatButton class="flat-button" :showIcon="true" :icon="'icon-new'" @click="jumpToTarget('/create')"
@@ -32,6 +32,7 @@ import { useRouter, Router } from 'vue-router'
 import AvatarGenerator from '/@utils/avatarGenerator'
 import FlatInput from '/@components/FlatInput.vue'
 import FlatButton from '/@components/FlatButton.vue'
+import { getRandomNumber } from '/@utils/tools'
 export default defineComponent({
   name: 'Home',
   setup() {
@@ -40,11 +41,9 @@ export default defineComponent({
       router.replace({ path: target })
     }
     const { avatarUrl, refreshing, processedUrl, refreshUrl } = handleAvatarUrl()
-    const { nickname } = handleNickname()
-    function seekGame(){
-      
-    }
-    return { jumpToTarget, avatarUrl, processedUrl, refreshing, refreshUrl, nickname,seekGame }
+    const { nickname, namePlaceholder } = handleNickname()
+    function seekGame() {}
+    return { jumpToTarget, avatarUrl, processedUrl, refreshing, refreshUrl, nickname, namePlaceholder, seekGame }
   },
   components: {
     FlatInput,
@@ -52,10 +51,17 @@ export default defineComponent({
   },
 })
 
-function handleNickname(): { nickname: Ref<string> } {
+interface NicknameInfo {
+  nickname: Ref<string>
+  namePlaceholder: Ref<string>
+}
+function handleNickname(): NicknameInfo {
+  const randomNum: number = getRandomNumber(1000, 9999)
   const nickname: Ref = ref<string>('')
+  const namePlaceholder: Ref = ref<string>(`player#${randomNum}`)
   return {
     nickname,
+    namePlaceholder,
   }
 }
 
