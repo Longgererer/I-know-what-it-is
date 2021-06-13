@@ -8,7 +8,7 @@
     </div>
     <div class="room-filter flex flex-jcb">
       <div class="room-info flex flex-clo flex-jcb">
-        <FlatInput v-model:value="roomInfo.name" :title="'房间名'" />
+        <FlatInput v-model:value="roomInfo.name" :title="'房间名'" placeholder="请填写房间名" :maxlength="10" />
         <div class="access-pwd flex flex-ai flex-jcb">
           <span class="title">设置密码</span>
           <FlatSwitcher v-model:value="roomInfo.accessPassword" />
@@ -37,7 +37,7 @@
           </div>
         </div>
         <div class="other-type text-small flex flex-ai flex-jcc">其他类型尽情期待</div>
-        <FlatButton class="create-btn">创建房间</FlatButton>
+        <FlatButton class="create-btn" :disabled="!roomInfo.name" @click="createRoom">创建房间</FlatButton>
       </div>
     </div>
   </div>
@@ -49,6 +49,7 @@ import FlatInput from '/@components/FlatInput.vue'
 import FlatSwitcher from '/@components/FlatSwitcher.vue'
 import FlatNumberInput from '/@components/FlatNumberInput.vue'
 import FlatButton from '/@components/FlatButton.vue'
+import { buildSocket } from '/@utils/tools'
 export default defineComponent({
   name: 'NewRoom',
   setup() {
@@ -57,10 +58,19 @@ export default defineComponent({
       router.replace({ path: target })
     }
     const { roomInfo, typeList } = handleRoomInfo()
+
+    function createRoom() {
+      const data = {
+        content: roomInfo,
+        type: 'createRoom',
+      }
+      buildSocket().send(data)
+    }
     return {
       jumpToTarget,
       roomInfo,
       typeList,
+      createRoom,
     }
   },
   components: {
@@ -200,7 +210,8 @@ function handleRoomInfo(): RoomInfoHandler {
         }
         .type-active {
           border: 2px solid $Primary;
-          color: $Primary;
+          color: $White;
+          background-color: $Primary;
         }
       }
       .other-type {
