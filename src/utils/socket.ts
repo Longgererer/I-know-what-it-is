@@ -1,4 +1,5 @@
-import { socketMsgT } from './types'
+import { socketMsgT, customObjT } from './types'
+import { set, get } from './session'
 
 export default class Socket {
   // 要连接的URL
@@ -18,24 +19,25 @@ export default class Socket {
   errorStack: Error[] = []
   // 事件管理
   events: { [key: string]: [] } = {}
-  instance: Socket | undefined
+  static instance: Socket | undefined
 
   constructor(url: string) {
-    if (!this.instance) {
+    if (!Socket.instance) {
       this.url = url
       this.ws = new WebSocket(url)
       this.monitorWs()
-      this.instance = this
+      Socket.instance = this
     }
-    return this
+    return Socket.instance
   }
   monitorWs() {
     const { ws, event } = this
     ws!.onopen = (e) => {
-      console.log(e)
+      console.trace('open')
     }
     ws!.onmessage = ({ data }) => {
-      console.log(data)
+      const { data: content, type } = JSON.parse(data)
+      this.typeHandler(type, content)
     }
     ws!.onclose = (e) => {
       console.log(e)
@@ -45,16 +47,20 @@ export default class Socket {
     }
   }
   send(msg: socketMsgT): void {
+    console.log('send')
     this.ws!.send(JSON.stringify(msg))
   }
   event(name: string, data: any): void {
     let eventsArray = this.events[name]
     eventsArray && eventsArray.forEach((fn: Function) => fn(data))
   }
-  typeHandler(type: string): void {
+  typeHandler(type: string, content: customObjT): void {
     switch (type) {
       case 'initUser': {
-
+        // 初始化用户，存储id和token
+        const { id, token } = content
+        set('userId', id)
+        set('token', token)
       }
     }
   }

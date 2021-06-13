@@ -1,3 +1,10 @@
+import Socket from './socket'
+import CONFIG from './CONFIG'
+
+function buildSocket() {
+  return new Socket(CONFIG.WS_URL)
+}
+
 type RandomNumberOpt = {
   exclude?: number[]
   isFloat?: boolean
@@ -26,8 +33,11 @@ function removeAllObjProperties<T extends Object, U extends keyof T>(target: T) 
   })
 }
 
+
+
 export {
+  buildSocket,
   debounce,
   getRandomNumber,
-  removeAllObjProperties
+  removeAllObjProperties,
 }
