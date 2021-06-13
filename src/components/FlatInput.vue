@@ -7,6 +7,7 @@
       :type="type"
       :value="value"
       :placeholder="placeholder"
+      :maxlength="maxlength"
       :class="size"
     />
   </div>
@@ -35,6 +36,10 @@ export default defineComponent({
     delay: {
       type: Number,
       default: 500,
+    },
+    maxlength: {
+      type: Number,
+      default: 100,
     },
   },
   setup({ lazy, delay }, { emit, attrs }) {
