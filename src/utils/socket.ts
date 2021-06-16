@@ -33,6 +33,7 @@ export default class Socket {
   monitorWs() {
     const { ws, event } = this
     ws!.onopen = (e) => {
+      console.log(new Date().getTime())
       console.trace('open')
     }
     ws!.onmessage = ({ data }) => {
@@ -47,7 +48,6 @@ export default class Socket {
     }
   }
   send(msg: socketMsgT): void {
-    console.log('send')
     this.ws!.send(JSON.stringify(msg))
   }
   event(name: string, data: any): void {
