@@ -37,14 +37,14 @@
           </div>
         </div>
         <div class="other-type text-small flex flex-ai flex-jcc">其他类型尽情期待</div>
-        <FlatButton class="create-btn" :disabled="!roomInfo.name" @click="createRoom">创建房间</FlatButton>
+        <FlatButton class="create-btn" :disabled="!createRoomDisabled" @click="createRoom">创建房间</FlatButton>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts">
 import { useRouter, Router } from 'vue-router'
-import { defineComponent, ref, Ref, reactive } from 'vue'
+import { defineComponent, ref, Ref, reactive, computed, ComputedRef, watch } from 'vue'
 import FlatInput from '/@components/FlatInput.vue'
 import FlatSwitcher from '/@components/FlatSwitcher.vue'
 import FlatNumberInput from '/@components/FlatNumberInput.vue'
@@ -59,6 +59,11 @@ export default defineComponent({
     }
     const { roomInfo, typeList } = handleRoomInfo()
 
+    const createRoomDisabled: ComputedRef<boolean> = computed(() => {
+      const { name, accessPassword, password } = roomInfo
+      return (name !== '' && !accessPassword) || password !== ''
+    })
+
     function createRoom() {
       const data = {
         content: roomInfo,
@@ -70,6 +75,7 @@ export default defineComponent({
       jumpToTarget,
       roomInfo,
       typeList,
+      createRoomDisabled,
       createRoom,
     }
   },
@@ -104,6 +110,12 @@ function handleRoomInfo(): RoomInfoHandler {
     password: '',
     playerNum: 4,
   })
+  watch(
+    () => roomInfo.accessPassword,
+    (newVal) => {
+      if (!newVal) roomInfo.password = ''
+    }
+  )
   const typeList: type[] = reactive([
     { name: '综合', id: 0 },
     { name: '动物', id: 1 },
