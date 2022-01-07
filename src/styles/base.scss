@@ -1,0 +1,58 @@
+// color
+$light-1: #ffffff;
+$light-2: #eeeeee;
+$light-3: #dfdfdf;
+$light-4: #bfbfbf;
+$light-5: #999999;
+$dark-1: #2c2c2c;
+$main: #a8bbab;
+$green: #4bff51;
+$red: #f46c6c;
+$blue: #1890ff;
+
+// other
+$font: Montserrat, -apple-system, BlinkMacSystemFont, Helvetica Neue, Arial, PingFang SC, Hiragino Sans GB, STHeiti,
+  Microsoft YaHei, Microsoft JhengHei, Source Han Sans SC, Noto Sans CJK SC, Source Han Sans CN, Noto Sans SC,
+  Source Han Sans TC, Noto Sans CJK TC, WenQuanYi Micro Hei, SimSun, sans-serif;
+$opc-img: url(data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==);
+$box-shadow: 0 2px 4px $main;
+$border-radius: 16px;
+$loader-size: (
+  'small': 20px,
+  'medium': 40px,
+);
+
+$flat-horizontal-padding: (
+  'mini': 2px,
+  'small': 4px,
+  'medium': 6px,
+  'large': 8px,
+  'xLarge': 10px,
+);
+$flat-font-size: (
+  'small': 14px,
+  'medium': 14px,
+  'large': 18px,
+  'xLarge': 18px,
+);
+$flat-border-radius: (
+  'small': 4px,
+  'medium': 6px,
+  'large': 8px,
+  'xLarge': 8px,
+);
+$flat-btn-color: (
+  'default': $light-1,
+  'primary': $light-1,
+  'danger': $light-1,
+);
+$flat-btn-bgc: (
+  'default': $blue,
+  'primary': $main,
+  'danger': $red,
+);
+$flat-btn-border: (
+  'default': $blue,
+  'primary': $main,
+  'danger': $red,
+);

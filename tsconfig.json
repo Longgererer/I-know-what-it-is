@@ -1,0 +1,68 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noUnusedParameters": false,
+    "importHelpers": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noImplicitThis": true,
+    "removeComments": false,
+    "strictFunctionTypes": false,
+    "baseUrl": ".",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "pretty": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": true,
+    "typeRoots": [
+      "./node_modules/@types/",
+      "./src/@types"
+    ],
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@utils/*": [
+        "./src/utils/*"
+      ],
+      "@router/*": [
+        "./src/router/*"
+      ],
+      "@views/*": [
+        "./src/views/*"
+      ],
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@types/*": [
+        "./src/@types/*"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
