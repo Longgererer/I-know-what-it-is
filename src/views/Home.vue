@@ -62,7 +62,7 @@ import { ref, reactive, ComponentInternalInstance, getCurrentInstance } from 'vu
 import FlatButton from '@components/FlatButton.vue'
 import FlatInput from '@components/FlatInput.vue'
 import Avatar from '@components/Avatar.vue'
-import ScreenLoader from '@components/screenLoader.vue'
+import ScreenLoader from '@components/ScreenLoader.vue'
 
 import { avatarData } from '@utils/publicData'
 import { randomInteger } from '@utils/tools'

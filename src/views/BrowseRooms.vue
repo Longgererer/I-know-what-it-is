@@ -28,7 +28,7 @@
           <span>主题</span>
         </div>
         <div class="table-content">
-          <div class="rooms-list">
+          <div class="rooms-list scroll-bar">
             <div
               class="room"
               :class="{
@@ -38,7 +38,9 @@
               :key="room.id"
               @click="selectRoom(room)"
             >
-              <span>{{ room.name }}</span>
+              <span>
+                <carousel custom-class="carousel-text" :text="room.name" center></carousel>
+              </span>
               <span>{{ room.playerNum }}</span>
               <span>{{ room.point }}</span>
               <span>{{ room.theme }}</span>
@@ -72,6 +74,8 @@ import FlatInput from '@components/FlatInput.vue'
 import FlatSelect from '@components/FlatSelect.vue'
 import FlatListItem from '@components/FlatListItem.vue'
 import FlatButton from '@components/FlatButton.vue'
+import FlatModal from '@components/FlatModal.vue'
+import Carousel from '@components/Carousel.vue'
 
 import { reactive, ref } from 'vue'
 import { themeList } from '@utils/publicData'
@@ -80,7 +84,7 @@ import { FreeObjT } from '@/@types'
 const roomsList = reactive([
   {
     id: 0,
-    name: 'player的房间',
+    name: 'player的房间123123123123123',
     playerNum: '10/12',
     point: '200/360',
     theme: '动物',
@@ -96,7 +100,7 @@ const roomsList = reactive([
   },
   {
     id: 2,
-    name: 'player的房间',
+    name: 'player的房间12312312312',
     playerNum: '10/12',
     point: '200/360',
     theme: '动物',
@@ -104,7 +108,7 @@ const roomsList = reactive([
   },
   {
     id: 3,
-    name: 'player的房间',
+    name: '这是文字跑马灯效果测试哦',
     playerNum: '10/12',
     point: '200/360',
     theme: '动物',
@@ -214,6 +218,7 @@ const confirmPwd = () => {
         justify-items: center;
         color: $main;
         font-size: 16px;
+        padding-left: 20px;
       }
       .table-content {
         margin-top: 10px;
@@ -228,7 +233,7 @@ const confirmPwd = () => {
             justify-items: center;
             border: 2px solid $light-3;
             border-radius: 4px;
-            padding: 10px 0;
+            padding: 10px 0 10px 20px;
             margin-bottom: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -242,6 +247,9 @@ const confirmPwd = () => {
             i {
               color: $main;
               font-size: 20px;
+            }
+            .carousel-text {
+              width: 180px;
             }
           }
           .room-select {

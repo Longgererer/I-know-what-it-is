@@ -1,4 +1,4 @@
-import { RgbT, HexT, BaseT } from "@/@types"
+import { RgbT, HexT } from "@/@types"
 
 const randomInteger = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1) + min)

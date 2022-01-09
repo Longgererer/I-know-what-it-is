@@ -38,7 +38,7 @@ export default class Socket {
     ws!.onclose = (e) => {
       console.log(e)
       this.ws = null
-      clearInterval(this.timerId as NodeJS.Timer)
+      clearInterval(<NodeJS.Timer>this.timerId)
     }
     ws!.onerror = (e) => {
       console.log(e)
@@ -54,16 +54,18 @@ export default class Socket {
   send(type: string, data?: any): void {
     this.ws?.send(JSON.stringify({ type, data }))
   }
-  createEvent(type: string, callback: Function): void {
-    const eventList: Function[] = this.events[type]
-    if (eventList.length) {
-      eventList.push(callback)
-    } else {
+  subscribeEvent(type: string, callback: Function): void {
+    const eventList: Function[] | undefined = this.events[type]
+    if (eventList === undefined) {
       this.events[type] = [callback]
+    } else {
+      this.events[type].push(callback)
     }
   }
   exeEvent(type: string, data: any): void {
-    const eventList = this.events[type]
-    eventList.forEach((fn: Function) => fn(data))
+    const eventList: Function[] | undefined = this.events[type]
+    if (eventList !== undefined) {
+      eventList.forEach((fn: Function) => fn(data))
+    }
   }
 }

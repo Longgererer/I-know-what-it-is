@@ -91,6 +91,28 @@
             ></like-button>
           </div>
         </div>
+        <div v-else-if="roomState === 4">
+          <span class="title">玩家放弃出题</span>
+        </div>
+        <div class="game-over flex flex-col flex-aic" v-else-if="roomState === 5">
+          <span class="title">游戏结束</span>
+          <div class="rank-list">
+            <div
+              class="flex flex-col flex-aic"
+              v-for="(player, index) in rankingList"
+              :key="player.id"
+              :class="`rank-${index + 1}`"
+            >
+              <img
+                class="medal"
+                :src="`/public/images/rank-${index + 1}.svg`"
+                :alt="`第${index + 1}`"
+              />
+              <avatar :avatar="player.avatar"></avatar>
+              <carousel custom-class="player-name" font-size="24" :text="player.name" center font-weight="bold"></carousel>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="chat-field">
         <div class="message-box">
@@ -116,20 +138,8 @@
       </div>
       <div class="player-field">
         <div class="player-content">
-          <div class="player-list">
-            <div class="player flex" v-for="item in playerList" :key="item.id">
-              <div class="avatar">
-                <avatar :avatar="item.avatar"></avatar>
-              </div>
-              <div class="player-info flex flex-col flex-jcb flex-1 flex-ais">
-                <div class="player-name">
-                  <span>{{ item.name }}</span>
-                </div>
-                <div class="player-point">
-                  <span>{{ item.point }}</span>
-                </div>
-              </div>
-            </div>
+          <div class="player-list flex flex-col">
+            <player v-for="item in playerList" :key="item.id" :player="item"></player>
           </div>
         </div>
       </div>
@@ -164,18 +174,20 @@
 import FlatButton from '@components/FlatButton.vue'
 import FlatInput from '@components/FlatInput.vue'
 import FlatModal from '@components/FlatModal.vue'
-import Avatar from '@components/Avatar.vue'
 import Loader from '@components/Loader.vue'
 import Timer from '@components/Timer.vue'
 import DrawingBoard from '@components/DrawingBoard.vue'
 import Toolbar from '@components/Toolbar.vue'
 import Theme from '@components/Theme.vue'
 import LikeButton from '@components/LikeButton.vue'
+import Player from '@components/Player.vue'
+import Avatar from '@components/Avatar.vue'
+import Carousel from '@components/Carousel.vue'
 
-import { reactive, ref, nextTick } from 'vue'
-import { FreeObjT, HexT, ListItemT } from '../@types'
-import { avatarData } from '../utils/publicData'
-import { randomInteger, copyInfo } from '../utils/tools'
+import { reactive, ref, nextTick, watch } from 'vue'
+import { FreeObjT, HexT, ListItemT, PlayerT } from '@/@types'
+import { avatarData } from '@utils/publicData'
+import { randomInteger, copyInfo } from '@utils/tools'
 
 const roomInfo = reactive({
   name: '房间名',
@@ -185,34 +197,35 @@ const roomInfo = reactive({
   pointLimit: 120
 })
 
-// 0: 等待玩家进入 1：玩家绘画中 2：等待玩家选题 3: 公布答案并评价 4：玩家放弃出题 5：公布答案
-const roomState = ref<number>(3)
+/**
+ * 0: 等待玩家进入 ?s
+ * 1：玩家绘画/查看玩家绘画 150s
+ * 2：玩家选题/等待玩家选题 30s
+ * 3：公布答案并评价/查看评价 15s
+ * 4：玩家放弃出题/放弃出题 10s
+ * 5：游戏结束 ?s
+ */
+const roomState = ref<number>(5)
 const stateText = ref<string[]>([
-  '等待玩家进入',
+  '等待玩家中',
   '你的答案是？',
-  '等待玩家选题',
-  '等待玩家选题',
-  '答案已公布',
+  true ? '你的回合' : '等待玩家选题',
+  '评价时间到',
+  true ? '你的回合' : '等待玩家选题',
+  '游戏结束',
 ])
 
-interface PlayerT {
-  id: number
-  name: string
-  avatar: FreeObjT
-  point: number
-  drawer: boolean
-}
+const playerList = ref<PlayerT[]>([])
 
-const playerList = reactive<PlayerT[]>([])
-
-const getRandomPlayers = () => {
+const getRandomPlayers = (num: number): PlayerT[] => {
   const keys: string[] = Object.keys(avatarData)
-  for (let i = 0;i < 10;i++) {
+  const result: PlayerT[] = []
+  for (let i = 0;i < num;i++) {
     const player: PlayerT | Object = {}
     const avatar: FreeObjT = {}
     Object.assign(player, {
       id: i,
-      name: `player${i}`,
+      name: `player${i}123123123123`,
       point: 100,
       drawer: false,
     })
@@ -221,11 +234,12 @@ const getRandomPlayers = () => {
       avatar[key] = (list[randomInteger(0, list.length)]) as string
       (player as PlayerT).avatar = avatar
     })
-    playerList.push(player as PlayerT)
+    result.push(player as PlayerT)
   }
+  return result
 }
 
-getRandomPlayers()
+playerList.value = getRandomPlayers(10)
 
 interface Message {
   id: number
@@ -279,6 +293,11 @@ const prepareQesList = reactive<ListItemT[]>([
   { value: 2, label: '梨' },
 ])
 const curSelectQes = ref<ListItemT>(prepareQesList[0])
+
+// 游戏结束，展示排名信息
+const rankingList = ref<PlayerT[]>([])
+rankingList.value = getRandomPlayers(3)
+
 
 // 房间信息modal
 const infoModalVisible = ref<boolean>(false)
@@ -441,6 +460,52 @@ const quitRoom = () => {
           margin-top: 100px;
         }
       }
+      .game-over {
+        color: $main;
+        font-weight: 600;
+        margin-top: 65px;
+        .title {
+          font-size: 40px;
+        }
+        .rank-list {
+          margin-top: 25px;
+          display: grid;
+          grid-template-columns: 130px 160px 130px;
+          column-gap: 35px;
+          grid-template-rows: 70px 250px;
+          grid-template-areas:
+            ". a ."
+            "b a c";
+          .rank-1 {
+            grid-area: a;
+            .medal {
+              height: 70px;
+              width: 70px;
+              margin-bottom: -20px;
+              position: relative;
+            }
+          }
+          .rank-2 {
+            grid-area: b;
+          }
+          .rank-3 {
+            grid-area: c;
+          }
+          .rank-2,
+          .rank-3 {
+            .medal {
+              height: 55px;
+              width: 55px;
+              margin-bottom: -15px;
+              position: relative;
+            }
+          }
+          .player-name {
+            width: 100%;
+            margin-top: 10px;
+          }
+        }
+      }
     }
     .chat-field {
       padding: 10px 5px 10px 15px;
@@ -500,7 +565,7 @@ const quitRoom = () => {
     .player-field {
       height: 535px;
       grid-area: d;
-      padding: 15px 5px 15px 15px;
+      padding: 15px 5px 15px 10px;
       .player-content {
         height: 100%;
         position: relative;
@@ -509,32 +574,6 @@ const quitRoom = () => {
           height: 100%;
           overflow: auto;
           @extend .scroll-bar;
-          .player {
-            margin: 7.5px 0;
-            .avatar {
-              width: 50px;
-              height: 53px;
-            }
-          }
-          .player-info {
-            font-size: 14px;
-            padding-left: 15px;
-            .player-name {
-              color: $main;
-            }
-            .player-point {
-              height: 20px;
-              background-color: $main;
-              font-weight: 600;
-              color: $light-1;
-              border-radius: 10px;
-              text-align: center;
-              padding: 0 10px;
-              span {
-                line-height: 20px;
-              }
-            }
-          }
         }
       }
     }

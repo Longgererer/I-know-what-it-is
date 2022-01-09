@@ -20,3 +20,11 @@ export interface SocketMsgT {
   type: string
   data: any
 }
+
+export interface PlayerT {
+  id: number
+  name: string
+  avatar: FreeObjT
+  point: number
+  drawer: boolean
+}
