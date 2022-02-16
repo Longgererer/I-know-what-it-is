@@ -1,4 +1,4 @@
-import { RgbT, HexT } from "@/@types"
+import { RgbT, HexT, FreeObjT } from "@/@types"
 
 const randomInteger = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1) + min)
@@ -23,7 +23,7 @@ const copyInfo = (info: string | number | symbol) => {
   if (navigator.clipboard) {
     navigator.clipboard.writeText(info)
   } else {
-    const input:HTMLInputElement = document.createElement('input')
+    const input: HTMLInputElement = document.createElement('input')
     input.value = info.toString()
     document.body.appendChild(input)
     input.select()
@@ -32,9 +32,14 @@ const copyInfo = (info: string | number | symbol) => {
   }
 }
 
+const isEmptyObject = (obj: FreeObjT) => {
+  return Object.keys(obj).length === 0
+}
+
 export {
   randomInteger,
   hex2Rgb,
   isColorDeep,
-  copyInfo
+  copyInfo,
+  isEmptyObject
 }

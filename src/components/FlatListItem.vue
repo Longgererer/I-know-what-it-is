@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<FlatSelectItemT>(), {
   value: undefined,
 })
 
-if (props.label !== undefined) {
+if (props.label === undefined) {
   props.label = props.value
 }
 

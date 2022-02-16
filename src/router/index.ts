@@ -17,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/views/BrowseRooms.vue')
   },
   {
-    path: '/room/:id',
+    path: '/room/:roomId',
     name: 'Room',
     component: () => import('@/views/Room.vue')
   }
@@ -26,6 +26,17 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes
+})
+
+router.beforeEach((to, _, next) => {
+  const { name, params } = to
+  if (name === 'Room') {
+    // 在跳转至房间页面的时候如果没有传递roomId或roomInfo则视为非法用户无权进入，直接跳转到主页
+    if (!params.roomId || !params.roomInfo) {
+      next('/')
+    }
+  }
+  next()
 })
 
 export default router

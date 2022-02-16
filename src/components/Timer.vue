@@ -1,39 +1,48 @@
 <template>
   <div class="timer">
-    <canvas ref="canvas"></canvas>
+    <canvas width="50" height="50" ref="canvas"></canvas>
     <span class="rest-time">{{ restTime }}</span>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<{
     limitTime: number
-    bgc: string
+    state: number
+    isDrawer: boolean
+    bgc?: string
   }>(),
   {
-    limitTime: 10,
+    limitTime: 0,
+    state: 0,
+    isDrawer: false,
     bgc: '#a8bbab',
   }
 )
 
+const emit = defineEmits<{
+  (e: 'timerEnd'): void
+}>()
+
 const canvas = ref<null | HTMLCanvasElement>(null)
 const restTime = ref<number>(props.limitTime)
+const rafId = ref<number | null>(null)
+const timerId = ref<NodeJS.Timer | null>(null)
 const size = 50
 const lineWidth = 5
 
-function drawTimer(ctx: CanvasRenderingContext2D) {
+const drawTimer = (ctx: CanvasRenderingContext2D) => {
   const initTime = Date.now()
   const limitTime = props.limitTime * 1000
-  const timerId = ref<number>(0);
-  (function render() {
+  function render() {
     const curTime = Date.now()
     const timeGap = curTime - initTime
     const timeProportion = timeGap / limitTime
     ctx.clearRect(0, 0, size, size)
-    ctx.fillStyle = '#b8ccbb'
+    ctx.fillStyle = props.bgc
     ctx.beginPath()
     ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2)
     ctx.fill()
@@ -50,16 +59,17 @@ function drawTimer(ctx: CanvasRenderingContext2D) {
     )
     ctx.stroke()
     if (timeGap < limitTime) {
-      timerId.value = requestAnimationFrame(() => {
+      rafId.value = requestAnimationFrame(() => {
         render()
       })
     } else {
-      cancelAnimationFrame(timerId.value)
+      cancelAnimationFrame(rafId.value as number)
     }
-  })()
+  }
+  render()
 }
 
-onMounted(() => {
+const init = () => {
   const canvasEle = <HTMLCanvasElement>canvas.value
   const dpr = window.devicePixelRatio
   canvasEle.style.width = 50 + 'px'
@@ -69,13 +79,53 @@ onMounted(() => {
   const ctx = <CanvasRenderingContext2D>canvasEle.getContext('2d')
   ctx.scale(dpr, dpr)
   drawTimer(ctx)
-  const intervalId = setInterval(() => {
-    if (restTime.value === 0) {
-      clearInterval(intervalId)
+  timerId.value = setInterval(() => {
+    if (restTime.value <= 0) {
+      clearInterval(timerId.value as NodeJS.Timer)
+      emit('timerEnd')
     } else {
       restTime.value--
     }
-  }, 1000)
+  }, 984)
+}
+
+const resetTimer = () => {
+  clearInterval(timerId.value as NodeJS.Timer)
+  cancelAnimationFrame(rafId.value as number)
+  if (props.limitTime > 0) {
+    init()
+  }
+}
+
+watch(() => props.state, () => {
+  restTime.value = props.limitTime
+  resetTimer()
+})
+
+onMounted(() => {
+  if (props.limitTime > 0) {
+    restTime.value = props.limitTime
+    init()
+  }
+})
+
+onBeforeUnmount(() => {
+  clearInterval(timerId.value as NodeJS.Timer)
+  cancelAnimationFrame(rafId.value as number)
+})
+
+defineExpose({
+  clearTimer() {
+    clearInterval(timerId.value as NodeJS.Timer)
+    cancelAnimationFrame(rafId.value as number)
+  },
+  setRestTime(newTime: number) {
+    console.log(newTime)
+    restTime.value = newTime
+  },
+  resetTimer(){
+    resetTimer()
+  }
 })
 </script>
 

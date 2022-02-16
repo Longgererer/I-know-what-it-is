@@ -5,21 +5,42 @@
       `flat-button--${size}`,
       `flat-button--${type}`,
       icon ? 'flat-button-only-icon' : '',
-      disabled ? 'flat-button-disabled' : '',
+      isDisabled ? 'flat-button-disabled' : '',
       shadow ? 'flat-button-shadow' : '',
       outline ? 'flat-button-outline' : ''
     ]"
-    :disabled="disabled"
+    :disabled="isDisabled"
     @click.stop="$emit('click')"
   >
-    <span class="flat-button-content">
+    <span class="flat-button-content" v-show="!loading">
       <i v-if="icon || showIcon" class="flat-button-icon" :class="iconClass"></i>
       <slot v-if="!icon"></slot>
     </span>
+    <div class="flat-button-load flex flex-aic" v-show="loading">
+      <svg
+        class="spinner"
+        :width="`${loadSize[size]}px`"
+        :height="`${loadSize[size]}px`"
+        :viewBox="`0 0 ${loadSize[size]} ${loadSize[size]}`"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          class="path"
+          fill="none"
+          stroke-width="2"
+          stroke-linecap="round"
+          :cx="`${loadSize[size] / 2}`"
+          :cy="`${loadSize[size] / 2}`"
+          :r="`${loadSize[size] / 2 - 2}`"
+        />
+      </svg>
+    </div>
   </button>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface Props {
   size?: string
   disabled?: boolean
@@ -29,6 +50,7 @@ interface Props {
   showIcon?: boolean
   shadow?: boolean
   outline?: boolean
+  loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -39,12 +61,29 @@ const props = withDefaults(defineProps<Props>(), {
   iconClass: '',
   showIcon: false,
   shadow: false,
-  outline: false
+  outline: false,
+  loading: false
 })
 
 const emit = defineEmits<{
   (e: 'click'): void
 }>()
+
+const isDisabled = computed(() => {
+  if (props.loading) {
+    return true
+  } else {
+    return props.disabled
+  }
+})
+
+const loadSize = {
+  mini: '20',
+  small: '20',
+  medium: '25',
+  large: '30',
+  xLarge: '30',
+}
 </script>
 
 <style lang="scss">
@@ -74,6 +113,41 @@ $namespace: "flat-button";
     font-size: inherit;
     margin-right: 10px;
     color: inherit;
+  }
+  .#{$namespace}-load {
+    $offset: 86.3;
+    $duration: 1.4s;
+    .spinner {
+      animation: rotator $duration linear infinite;
+    }
+    @keyframes rotator {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(270deg);
+      }
+    }
+    .path {
+      stroke-dasharray: $offset;
+      stroke-dashoffset: 0;
+      transform-origin: center;
+      stroke: $light-1;
+      animation: dash $duration ease-in-out infinite;
+    }
+    @keyframes dash {
+      0% {
+        stroke-dashoffset: $offset;
+      }
+      50% {
+        stroke-dashoffset: calc($offset / 4);
+        transform: rotate(135deg);
+      }
+      100% {
+        stroke-dashoffset: $offset;
+        transform: rotate(450deg);
+      }
+    }
   }
 }
 .#{$namespace}.#{$namespace}-disabled {

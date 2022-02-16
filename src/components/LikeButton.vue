@@ -1,10 +1,10 @@
 <template>
-  <div @click.stop="onclick">
+  <div @click.stop="onclick" :class="disabled ? 'like-button--disabled' : ''">
     <button
       class="like-button flex flex-aic flex-jcc"
       :class="[
         `like-button--${type}`,
-        active ? 'like-button--active' : ''
+        active ? 'like-button--active' : '',
       ]"
     >
       <i :class="iconClass"></i>
@@ -104,13 +104,10 @@ $namespace: "like-button";
     span {
       animation: dot-fade 0.5s ease-in-out;
     }
-    // span:nth-child(1) {
-    //   animation: dot-fade 0.3s ease-in-out infinite;
-    // }
-    // span:nth-child(3) {
-    //   transform: rotate(30deg) translateX(20px);
-    // }
   }
+}
+.#{$namespace}--disabled {
+  pointer-events: none;
 }
 @keyframes dot-fade {
   0% {

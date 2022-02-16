@@ -16,6 +16,7 @@ import Loader from '@components/Loader.vue'
 const props = defineProps<{
   modelValue?: boolean
   slotClass?: string
+  closeByClick?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -23,7 +24,9 @@ const emit = defineEmits<{
 }>()
 
 function closeLoader() {
-  emit('update:modelValue', false)
+  if (props.closeByClick) {
+    emit('update:modelValue', false)
+  }
 }
 </script>
 

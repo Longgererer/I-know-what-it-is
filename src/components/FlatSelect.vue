@@ -16,7 +16,10 @@
     </div>
     <div
       class="flat-select-drop-down"
-      :class="{ 'flat-select-drop-down-active': showDropdownOpts }"
+      :class="{
+        'flat-select-drop-down-active': showDropdownOpts,
+        'flat-select-drop-down-top': top
+      }"
       v-show="showDropdownOpts"
     >
       <slot>no data</slot>
@@ -34,6 +37,7 @@ interface Props {
   clearable?: boolean
   placeholder?: string
   modelValue?: any
+  top?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -41,6 +45,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: '',
   clearable: false,
   modelValue: { label: '', value: '' },
+  top: false
 })
 
 const emit = defineEmits<{
@@ -49,7 +54,17 @@ const emit = defineEmits<{
 }>()
 
 const curBindItem = computed({
-  get: () => props.modelValue,
+  get: () => {
+    const modelValue = props.modelValue
+    if (modelValue && typeof modelValue === 'object') {
+      return modelValue
+    } else {
+      return {
+        label: modelValue,
+        value: modelValue
+      }
+    }
+  },
   set: (value) => {
     emit('update:modelValue', value)
   },
@@ -115,11 +130,14 @@ $namespace: "flat-select";
     width: 100%;
     position: absolute;
     top: 100%;
-    top: 100%;
     opacity: 0;
     background-color: $light-1;
     box-shadow: $box-shadow;
     z-index: 1000;
+  }
+  .#{$namespace}-drop-down-top {
+    top: auto;
+    bottom: 100%;
   }
   .#{$namespace}-drop-down-active {
     opacity: 1;

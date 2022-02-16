@@ -9,7 +9,12 @@
         <div class="room-info-left flex-1">
           <div class="room-name flex flex-col">
             <span class="room-name-label">房间名</span>
-            <flat-input placeholder="player的房间" show-limit :maxlength="20" v-model.trim="roomName"></flat-input>
+            <flat-input
+              :placeholder="roomNamePlaceholder"
+              show-limit
+              :maxlength="20"
+              v-model.trim="roomName"
+            ></flat-input>
           </div>
           <div class="public flex flex-aic flex-jcb">
             <span class="public-label">是否公开</span>
@@ -32,7 +37,9 @@
           <div class="point-limit flex flex-aic flex-jcb">
             <span class="point-limit-label">积分上限</span>
             <div class="point-limit-select">
-              <flat-select v-model="pointLimit"></flat-select>
+              <flat-select v-model="pointLimit" top>
+                <flat-list-item v-for="item in pointList" :key="item" :label="item" :value="item"></flat-list-item>
+              </flat-select>
             </div>
           </div>
         </div>
@@ -52,11 +59,19 @@
         </div>
       </div>
     </main>
+    <screen-loader
+      v-model="createLoaderVisible"
+      slot-class="create-loader-content"
+      :close-by-click="false"
+    >
+      <span>正在创建房间...</span>
+    </screen-loader>
+    <!-- 表单错误警告 -->
     <flat-modal
       :show-close="false"
       v-model="warningModalVisible"
       title="警告"
-      :closeOnClickScreen="false"
+      :close-on-click-screen="false"
       @confirm="warningModalVisible = false"
     >
       <span>{{ warningText }}</span>
@@ -69,19 +84,29 @@ import FlatInput from '@components/FlatInput.vue'
 import FlatSwitcher from '@components/FlatSwitcher.vue'
 import FlatNumberInput from '@components/FlatNumberInput.vue'
 import FlatSelect from '@components/FlatSelect.vue'
+import FlatListItem from '@components/FlatListItem.vue'
 import FlatButton from '@components/FlatButton.vue'
 import FlatModal from '@components/FlatModal.vue'
+import ScreenLoader from '@components/ScreenLoader.vue'
 import Theme from '@components/Theme.vue'
 
-import { ref } from 'vue'
-import { themeList } from '@utils/publicData'
-import { ListItemT } from '@/@types'
+import { ref, inject, onBeforeUnmount, ComponentInternalInstance, getCurrentInstance } from 'vue'
+import router from '@/router'
+import { themeList, pointList } from '@utils/publicData'
+import { stateName } from '@/store'
+import { FreeObjT, ListItemT, GlobalStateT } from '@/@types'
+
+const vm: ComponentInternalInstance | null = getCurrentInstance()
+const ws = vm!.appContext.config.globalProperties.$ws
+
+const globalState = <GlobalStateT>inject(stateName)
 
 const roomName = ref<string>('')
+const roomNamePlaceholder = `${globalState.username}的房间`
 const isPublic = ref<boolean>(true)
 const password = ref<string>('')
 const playerLimit = ref<number>(2)
-const pointLimit = ref<number>(100)
+const pointLimit = ref<ListItemT>({ label: 100, value: 100 })
 const theme = ref<ListItemT>(themeList[0])
 
 const onPublicChanged = (newState: boolean) => {
@@ -97,17 +122,64 @@ const selectTheme = (item: ListItemT) => {
 const warningModalVisible = ref<boolean>(false)
 const warningText = ref<string>('')
 
+const createLoaderVisible = ref<boolean>(false)
+// 创建房间
 const createRoom = () => {
-  if (roomName.value === '') {
-    warningText.value = '请填写房间名！'
-    warningModalVisible.value = true
-  } else if (!isPublic.value && password.value === '') {
+  if (!isPublic.value && password.value === '') {
+    // 如果打开加密，却没有密码
     warningText.value = '请填写密码！'
     warningModalVisible.value = true
   } else {
-    // 进入房间
+    // 创建房间
+    createLoaderVisible.value = true
+    const userId = globalState.userId
+    const msg = {
+      type: 'createRoom',
+      data: {
+        roomName: roomName.value.trim() || roomNamePlaceholder,
+        tid: theme.value.value,
+        max: playerLimit.value,
+        password: password.value,
+        encrypted: isPublic.value ? 0 : 1,
+        accumulate: pointLimit.value.label
+      },
+      send: userId
+    }
+    // 如果此时用户还没注册，注册用户
+    if (userId === 0) {
+      Object.assign(msg, {
+        image: globalState.avatar,
+        name: globalState.username
+      })
+    }
+    ws.send(msg)
+    ws.subscribeEvent('createRoom', (resp: FreeObjT) => {
+      const { data, send, roomId, drawer } = resp
+      globalState.userId = send
+      createLoaderVisible.value = false
+      const roomInfo = {
+        roomId,
+        roomName: roomName.value.trim() || roomNamePlaceholder,
+        tid: theme.value.value,
+        max: playerLimit.value,
+        accumulate: pointLimit.value.label,
+      }
+      router.push({
+        name: 'Room',
+        params: {
+          roomId,
+          drawer,
+          players: JSON.stringify(data),
+          roomInfo: JSON.stringify(roomInfo)
+        }
+      })
+    })
   }
 }
+
+onBeforeUnmount(() => {
+  ws.unsubscribeAll()
+})
 </script>
 
 <style lang="scss">
@@ -235,5 +307,10 @@ const createRoom = () => {
       }
     }
   }
+}
+.create-loader-content {
+  color: $main;
+  font-size: 20px;
+  margin-top: 20px;
 }
 </style>

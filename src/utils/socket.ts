@@ -1,3 +1,6 @@
+import { FreeObjT } from '@/@types'
+import { switchType } from './socketTools'
+
 export default class Socket {
   // 要连接的URL
   url: string = ''
@@ -9,6 +12,8 @@ export default class Socket {
   timeOut: number = 30000
   // 事件管理
   events: { [key: string]: Function[] } = {}
+  // 延迟发送列表，由于触发send方法时连接可能还没有建立，因此把这些待发送的数据缓存起来，连接完成再发送
+  delaySendList: FreeObjT[] = []
   // 实例
   static instance: Socket | undefined
 
@@ -17,11 +22,11 @@ export default class Socket {
       this.url = url
       this.ws = new WebSocket(url)
       this.monitor()
-      this.timerId = setInterval(() => {
-        if (this.ws !== null) {
-          this.send('heartBeat')
-        }
-      }, this.timeOut)
+      // this.timerId = setInterval(() => {
+      //   if (this.ws !== null) {
+      //     this.send('heartBeat')
+      //   }
+      // }, this.timeOut)
       Socket.instance = this
     }
     return Socket.instance
@@ -30,10 +35,13 @@ export default class Socket {
     const { ws } = this
     ws!.onopen = () => {
       console.log('ws连接已建立')
+      this.exeEvent('open', true)
+      this.delaySendList.forEach((item) => {
+        this.send(item)
+      })
     }
     ws!.onmessage = ({ data }) => {
-      const { data: content, type } = JSON.parse(data)
-      this.handleType(type, content)
+      this.handleType(JSON.parse(data))
     }
     ws!.onclose = (e) => {
       console.log(e)
@@ -44,15 +52,21 @@ export default class Socket {
       console.log(e)
     }
   }
-  handleType(type: string, data?: any): void {
-    switch (type) {
+  handleType(data: any): void {
+    const finType = <string>switchType(data.type)
+    switch (data.type) {
       default: {
-        this.exeEvent(type, data)
+        this.exeEvent(finType, data)
       }
     }
   }
-  send(type: string, data?: any): void {
-    this.ws?.send(JSON.stringify({ type, data }))
+  send(data: any): void {
+    if (this.ws?.readyState === 1) {
+      const finType = <number>switchType(data.type)
+      this.ws?.send(JSON.stringify({ ...data, type: finType }))
+    } else {
+      this.delaySendList.push({ ...data })
+    }
   }
   subscribeEvent(type: string, callback: Function): void {
     const eventList: Function[] | undefined = this.events[type]
@@ -62,10 +76,24 @@ export default class Socket {
       this.events[type].push(callback)
     }
   }
+  unsubscribeEvent(type: string, callback: Function): void {
+    const eventList: Function[] | undefined = this.events[type]
+    for (let i = 0;i < eventList.length;i++) {
+      if (eventList[i] === callback) {
+        eventList.splice(i, 1)
+      }
+    }
+  }
+  unsubscribeAll(): void {
+    this.events = {}
+  }
   exeEvent(type: string, data: any): void {
     const eventList: Function[] | undefined = this.events[type]
     if (eventList !== undefined) {
       eventList.forEach((fn: Function) => fn(data))
     }
+  }
+  close(): void {
+    this.ws?.close()
   }
 }

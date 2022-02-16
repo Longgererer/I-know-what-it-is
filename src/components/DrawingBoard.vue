@@ -3,6 +3,7 @@
     <canvas
       ref="canvas"
       class="canvas"
+      :class="{ 'canvas-prevent': prevent }"
       @mousemove="onMouseMove"
       @mousedown="onMouseDown"
       @mouseup="onMouseUp"
@@ -40,6 +41,7 @@ interface Props {
   color?: HexT | string
   lineWidth?: number
   readonly?: boolean
+  prevent?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -47,6 +49,10 @@ const props = withDefaults(defineProps<Props>(), {
   lineWidth: 8,
   readonly: false
 })
+
+const emit = defineEmits<{
+  (e: 'drawing', drawingInfo: FreeObjT): void
+}>()
 
 const deepColor = ref<boolean>(false)
 
@@ -85,15 +91,14 @@ const brushStyle = computed<FreeObjT>(() => {
   }
 })
 
-const drawLine = (e: MouseEvent) => {
+const drawLine = (offsetX: number, offsetY: number, color?: string, width?: number) => {
   const ctxVal = <CanvasRenderingContext2D>ctx.value
   ctxVal.lineJoin = 'round'
   ctxVal.lineCap = 'round'
-  ctxVal.lineWidth = props.lineWidth
-  ctxVal.strokeStyle = props.color
+  ctxVal.lineWidth = width || props.lineWidth
+  ctxVal.strokeStyle = color || props.color
   ctxVal.beginPath()
   const { x, y } = startPos
-  const { offsetX, offsetY } = e
   ctxVal.moveTo(x, y)
   ctxVal.lineTo(offsetX, offsetY)
   ctxVal.stroke()
@@ -102,11 +107,13 @@ const drawLine = (e: MouseEvent) => {
 
 const drawing = ref<boolean>(false)
 const showBrush = ref<boolean>(false)
+let curPath = ''
 const onMouseMove = (e: MouseEvent) => {
+  const { offsetX, offsetY } = e
   if (drawing.value) {
-    drawLine(e)
+    drawLine(offsetX, offsetY)
+    curPath += curPath ? `.${offsetX}.${offsetY}` : `${offsetX}.${offsetY}`
   } else {
-    const { offsetX, offsetY } = e
     Object.assign(startPos, { x: offsetX, y: offsetY })
   }
 }
@@ -117,10 +124,17 @@ const onMouseLeave = () => {
   showBrush.value = false
   drawing.value = false
 }
-const onMouseDown = () => {
+const onMouseDown = (e: MouseEvent) => {
+  const { offsetX, offsetY } = e
+  Object.assign(startPos, { x: offsetX, y: offsetY })
+  drawLine(offsetX, offsetY)
   drawing.value = true
 }
-const onMouseUp = () => {
+const onMouseUp = (e: MouseEvent) => {
+  const { offsetX, offsetY } = e
+  curPath += curPath ? `.${offsetX}.${offsetY}` : `${offsetX}.${offsetY}`
+  emit('drawing', [curPath, props.color, props.lineWidth])
+  curPath = ''
   drawing.value = false
 }
 
@@ -133,9 +147,38 @@ onMounted(() => {
   init()
 })
 
+let rafId = 0
 defineExpose({
   clearCanvas() {
     init()
+  },
+  drawCanvas(info: string) {
+    let [path, color, width] = JSON.parse(info)
+    const pathArr = path.split('.')
+    let x = pathArr[0]
+    let y = pathArr[1]
+    Object.assign(startPos, { x, y })
+    const ctxVal = <CanvasRenderingContext2D>ctx.value
+    ctxVal.lineJoin = 'round'
+    ctxVal.lineCap = 'round'
+    ctxVal.lineWidth = width
+    ctxVal.strokeStyle = color
+    let i = 0
+    function animationDraw() {
+      ctxVal.beginPath()
+      ctxVal.moveTo(x, y)
+      ctxVal.lineTo(pathArr[i], pathArr[i + 1])
+      x = pathArr[i]
+      y = pathArr[i + 1]
+      i += 2
+      ctxVal.stroke()
+      if (i < pathArr.length) {
+        rafId = requestAnimationFrame(animationDraw)
+      } else {
+        cancelAnimationFrame(rafId)
+      }
+    }
+    animationDraw()
   }
 })
 </script>
@@ -148,6 +191,9 @@ defineExpose({
   .canvas {
     cursor: none;
     vertical-align: bottom;
+  }
+  .canvas-prevent {
+    pointer-events: none;
   }
   .brush {
     cursor: none;
