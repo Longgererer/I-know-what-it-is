@@ -8,6 +8,11 @@
     <span>连接服务器中...</span>
   </screen-loader>
   <router-view></router-view>
+  <div id="preload-box">
+    <div id="preload-01"></div>
+    <div id="preload-02"></div>
+    <div id="preload-03"></div>
+  </div>
 </template>
 <script setup lang="ts">
 import ScreenLoader from '@components/ScreenLoader.vue'
@@ -36,5 +41,14 @@ onMounted(() => {
   color: $main;
   font-size: 20px;
   margin-top: 20px;
+}
+#preload-01 {
+  background: url(../public/images/rank-1.svg) no-repeat -9999px -9999px;
+}
+#preload-02 {
+  background: url(../public/images/rank-2.svg) no-repeat -9999px -9999px;
+}
+#preload-03 {
+  background: url(../public/images/rank-3.svg) no-repeat -9999px -9999px;
 }
 </style>

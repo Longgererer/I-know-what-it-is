@@ -17,6 +17,7 @@ export default {
     verifyPwd: 11, // 发送房间密码
     quitRoom: 12, // 退出房间
     clearCanvas: 13, // 清除画布
+    repealCanvas: 14, // 画布回退
     waitChooseQuestion: 100, // 其他人等待玩家选题，倒计时 30s
     waitDrawing: 101, // 玩家绘画/其他人查看玩家绘画，倒计时 120s
     evaluate: 102, // 中场暂停 倒计时 10s。以下几种情况视为中场暂停：当前绘画结束，答案已公布，玩家点赞或点踩的时间。

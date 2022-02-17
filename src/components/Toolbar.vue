@@ -21,11 +21,35 @@
         icon
         icon-class="icon iconfont icon-eraser"
         @click="selectEraser"
+        title="橡皮擦"
+      ></flat-button>
+      <flat-button
+        class="repeal-btn"
+        icon
+        icon-class="icon iconfont icon-chexiao"
+        type="default"
+        @click="$emit('repeal')"
+        title="撤回"
       ></flat-button>
     </div>
     <div class="flex-1"></div>
     <div class="other-opts">
-      <flat-button icon type="danger" icon-class="icon iconfont icon-bin" @click="$emit('clear')"></flat-button>
+      <flat-button
+        icon
+        type="danger"
+        class="btn-clear"
+        icon-class="icon iconfont icon-bin"
+        @click="$emit('clear')"
+        title="清空画布"
+      ></flat-button>
+      <flat-button
+        icon
+        type="danger"
+        class="btn-skip"
+        icon-class="icon iconfont icon-skip"
+        @click="$emit('skip')"
+        title="结束绘画"
+      ></flat-button>
     </div>
   </div>
 </template>
@@ -41,6 +65,8 @@ const emit = defineEmits<{
   (e: 'selectColor', value: string): void
   (e: 'changeWeight', value: number): void
   (e: 'clear'): void
+  (e: 'skip'): void
+  (e: 'repeal'): void
 }>()
 
 const curColor = ref<string>(palette[0])
@@ -102,6 +128,14 @@ watchEffect(() => {
     }
     .eraser-btn {
       margin-left: 15px;
+    }
+    .repeal-btn {
+      margin-left: 10px;
+    }
+  }
+  .other-opts {
+    .btn-skip {
+      margin-left: 10px;
     }
   }
 }

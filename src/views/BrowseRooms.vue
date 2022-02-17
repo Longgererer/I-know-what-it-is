@@ -74,7 +74,7 @@
         >进入房间</flat-button>
       </div>
     </main>
-    <flat-modal v-model="modalVisible" @confirm="confirmPwd">
+    <flat-modal v-model="modalVisible" @confirm="confirmPwd" :close-on-click-screen="false">
       <div class="flex flex-col">
         <span>请输入房间密码：</span>
         <flat-input type="password" v-model="roomPwd"></flat-input>
@@ -190,12 +190,14 @@ const enterRoom = () => {
   ws.send(msg)
   const callback = (resp: FreeObjT) => {
     const { data, send, roomId, drawer, bol } = resp
-    if(bol === false){
-      warningModalVisible.value = true
-      warningText.value = '房间人满，无法进入！'
-    }
     globalState.userId = send
     ws.unsubscribeEvent('enterRoom', callback)
+    enterLoaderVisible.value = false
+    if (bol === false) {
+      warningModalVisible.value = true
+      warningText.value = '房间人满，无法进入！'
+      return void 0
+    }
     router.push({
       name: 'Room',
       params: {
@@ -205,7 +207,6 @@ const enterRoom = () => {
         roomInfo: JSON.stringify(curSelect.value)
       }
     })
-    enterLoaderVisible.value = false
   }
   ws.subscribeEvent('enterRoom', callback)
 }

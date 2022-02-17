@@ -25,10 +25,10 @@ const themeList: ListItemT[] = [
   { label: '综合', value: 0 },
   { label: '水果', value: 1 },
   { label: '动物', value: 2 },
-  { label: '饮食', value: 3 },
+  { label: '物品', value: 3 },
 ]
 
-const pointList: number[] = [10, 60, 100, 120, 150, 200, 300]
+const pointList: number[] = [10, 30, 60, 100, 120, 150, 200, 300]
 
 const palette: string[] = [
   '#000000',

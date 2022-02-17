@@ -4,6 +4,7 @@
       <div class="logo">
         <img src="../assets/images/logo.svg" />
       </div>
+      <div class="version">v{{projectConfig.version}}</div>
       <div class="home-content flex">
         <!-- 用户信息：头像、用户名 -->
         <div class="user-info-content flex flex-col flex-1 flex-aic">
@@ -84,6 +85,7 @@ import { randomInteger } from '@utils/tools'
 import { local } from '@utils/storage'
 import { stateName } from '@/store'
 import { FreeObjT, GlobalStateT } from '@/@types'
+import projectConfig from '../../package.json'
 
 const vm: ComponentInternalInstance | null = getCurrentInstance()
 const ws = vm!.appContext.config.globalProperties.$ws
@@ -154,7 +156,7 @@ ws.subscribeEvent('quickStart', (resp: FreeObjT) => {
   } else {
     // 找到房间，跳转到roomId对应的页面
     const [roomInfo, players] = data
-    console.log(roomInfo, players)
+    console.log(roomId, drawer, players, roomInfo)
     router.push({
       name: 'Room',
       params: {
@@ -198,6 +200,10 @@ onBeforeUnmount(() => {
       img {
         width: 300px;
       }
+    }
+    .version {
+      text-align: center;
+      color: $light-4;
     }
     .home-content {
       padding-top: 40px;

@@ -105,8 +105,8 @@ const roomName = ref<string>('')
 const roomNamePlaceholder = `${globalState.username}的房间`
 const isPublic = ref<boolean>(true)
 const password = ref<string>('')
-const playerLimit = ref<number>(2)
-const pointLimit = ref<ListItemT>({ label: 100, value: 100 })
+const playerLimit = ref<number>(5)
+const pointLimit = ref<ListItemT>({ label: 30, value: 30 })
 const theme = ref<ListItemT>(themeList[0])
 
 const onPublicChanged = (newState: boolean) => {

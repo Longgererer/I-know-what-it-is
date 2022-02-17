@@ -67,6 +67,10 @@ const canvasSize = reactive<{
   width: number
   height: number
 }>({ width: 0, height: 0 })
+
+// 用于记录笔画，回退上一笔可使用
+let repealPathList: any[][] = []
+
 const init = () => {
   const { width, height } = canvasSize
   const ctxVal = <CanvasRenderingContext2D>ctx.value
@@ -90,6 +94,43 @@ const brushStyle = computed<FreeObjT>(() => {
     transform: `translate(${x - lineWidth / 2}px,${y - lineWidth / 2}px)`,
   }
 })
+
+const drawPath = (path: string, color: string, width: number) => {
+  const pathArr: string[] = path.split('.')
+  let x = parseInt(pathArr[0])
+  let y = parseInt(pathArr[1])
+  Object.assign(startPos, { x, y })
+  const ctxVal = <CanvasRenderingContext2D>ctx.value
+  ctxVal.lineJoin = 'round'
+  ctxVal.lineCap = 'round'
+  ctxVal.lineWidth = width
+  ctxVal.strokeStyle = color
+  ctxVal.beginPath()
+  for (let i = 0;i < pathArr.length;i += 2) {
+    ctxVal.moveTo(x, y)
+    const nextX = parseInt(pathArr[i])
+    const nextY = parseInt(pathArr[i + 1])
+    ctxVal.lineTo(nextX, nextY)
+    x = nextX
+    y = nextY
+  }
+  ctxVal.stroke()
+}
+
+// 重新渲染画布，在撤回操作时会用到
+const redraw = (pathInfoList: any[][]) => {
+  const ctxVal = <CanvasRenderingContext2D>ctx.value
+  const { width, height } = <HTMLCanvasElement>canvas.value
+  ctxVal.clearRect(0, 0, width, height)
+  ctxVal.beginPath()
+  ctxVal.rect(0, 0, width, height)
+  ctxVal.fillStyle = canvasBgc
+  ctxVal.fill()
+  pathInfoList.forEach((pathInfo) => {
+    let [path, color, width] = pathInfo
+    drawPath(path, color, width)
+  })
+}
 
 const drawLine = (offsetX: number, offsetY: number, color?: string, width?: number) => {
   const ctxVal = <CanvasRenderingContext2D>ctx.value
@@ -120,7 +161,13 @@ const onMouseMove = (e: MouseEvent) => {
 const onMouseEnter = () => {
   showBrush.value = true
 }
-const onMouseLeave = () => {
+const onMouseLeave = (e: MouseEvent) => {
+  if (drawing.value) {
+    const pathInfo = [curPath, props.color, props.lineWidth]
+    emit('drawing', pathInfo)
+    repealPathList.push(pathInfo)
+    curPath = ''
+  }
   showBrush.value = false
   drawing.value = false
 }
@@ -131,10 +178,16 @@ const onMouseDown = (e: MouseEvent) => {
   drawing.value = true
 }
 const onMouseUp = (e: MouseEvent) => {
-  const { offsetX, offsetY } = e
-  curPath += curPath ? `.${offsetX}.${offsetY}` : `${offsetX}.${offsetY}`
-  emit('drawing', [curPath, props.color, props.lineWidth])
-  curPath = ''
+  if (drawing.value) {
+    const { offsetX, offsetY } = e
+    if (!curPath) {
+      curPath = `${offsetX}.${offsetY}`
+    }
+    const pathInfo = [curPath, props.color, props.lineWidth]
+    emit('drawing', pathInfo)
+    repealPathList.push(pathInfo)
+    curPath = ''
+  }
   drawing.value = false
 }
 
@@ -144,41 +197,43 @@ onMounted(() => {
   ctx.value = <CanvasRenderingContext2D>canvasEle.getContext('2d')
   Object.assign(ctx.value.canvas, { width, height })
   Object.assign(canvasSize, { width, height })
+  repealPathList = []
   init()
 })
 
-let rafId = 0
 defineExpose({
   clearCanvas() {
     init()
   },
   drawCanvas(info: string) {
     let [path, color, width] = JSON.parse(info)
-    const pathArr = path.split('.')
-    let x = pathArr[0]
-    let y = pathArr[1]
-    Object.assign(startPos, { x, y })
-    const ctxVal = <CanvasRenderingContext2D>ctx.value
-    ctxVal.lineJoin = 'round'
-    ctxVal.lineCap = 'round'
-    ctxVal.lineWidth = width
-    ctxVal.strokeStyle = color
-    let i = 0
-    function animationDraw() {
-      ctxVal.beginPath()
-      ctxVal.moveTo(x, y)
-      ctxVal.lineTo(pathArr[i], pathArr[i + 1])
-      x = pathArr[i]
-      y = pathArr[i + 1]
-      i += 2
-      ctxVal.stroke()
-      if (i < pathArr.length) {
-        rafId = requestAnimationFrame(animationDraw)
-      } else {
-        cancelAnimationFrame(rafId)
-      }
-    }
-    animationDraw()
+    repealPathList.push([path, color, width])
+    drawPath(path, color, width)
+    // let rafId = 0
+    // let i = 0
+    // function animationDraw() {
+    //   ctxVal.beginPath()
+    //   ctxVal.moveTo(x, y)
+    //   ctxVal.lineTo(pathArr[i], pathArr[i + 1])
+    //   x = pathArr[i]
+    //   y = pathArr[i + 1]
+    //   i += 2
+    //   ctxVal.stroke()
+    //   if (i < pathArr.length) {
+    //     rafId = requestAnimationFrame(animationDraw)
+    //   } else {
+    //     cancelAnimationFrame(rafId)
+    //   }
+    // }
+    // animationDraw()
+  },
+  repealPath() {
+    // 将画布回退为上一笔
+    repealPathList.splice(-1, 1)
+    redraw(repealPathList)
+  },
+  clearHistory() {
+    repealPathList = []
   }
 })
 </script>

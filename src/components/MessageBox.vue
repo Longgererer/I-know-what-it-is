@@ -89,6 +89,8 @@ defineExpose({
     @extend .scroll-bar;
     .message {
       margin-bottom: 15px;
+      word-wrap: break-word;
+      max-width: 100%;
       &:first-child {
         margin-top: 10px;
       }
@@ -103,6 +105,7 @@ defineExpose({
         font-size: 14px;
         position: relative;
         margin-top: 10px;
+        max-width: 100%;
         &::before {
           content: "";
           display: block;
@@ -127,6 +130,7 @@ defineExpose({
         font-size: 14px;
         position: relative;
         margin-top: 10px;
+        max-width: 100%;
         &::before {
           content: "";
           display: block;

@@ -8,12 +8,14 @@
           icon-class="icon iconfont icon-exit"
           type="danger"
           @click="quitModalVisible = true"
+          title="退出房间"
         ></flat-button>
         <flat-button
           icon
           icon-class="icon iconfont icon-info"
           type="default"
           @click="infoModalVisible = true"
+          title="房间信息"
         ></flat-button>
       </div>
       <!-- 游戏区域 -->
@@ -56,6 +58,8 @@
               @selectColor="onSelectColor"
               @changeWeight="onChangeWeight"
               @clear="clearBoard"
+              @skip="skipTurnModalVisible = true"
+              @repeal="repeal"
               v-if="isDrawer"
             ></Toolbar>
           </div>
@@ -107,7 +111,7 @@
         <div class="answer-and-evaluate flex flex-col flex-aic" v-else-if="roomState === 3">
           <span class="first-title">答案是：{{ curAnswer }}！</span>
           <span class="sub-title" v-if="isDrawer">等待玩家们对你的画作做出评价</span>
-          <span class="sub-title" v-else>你对该画作满意么</span>
+          <span class="sub-title" v-else>你对该画作满意么？</span>
           <div class="evaluate-btn flex flex-jcb">
             <div class="evaluate-zan flex flex-col flex-aic">
               <span>{{ zanNum }}</span>
@@ -229,6 +233,10 @@
     <flat-modal v-model="quitModalVisible" @confirm="quitRoom">
       <span>确认退出房间么？</span>
     </flat-modal>
+    <!-- 结束绘画提示modal -->
+    <flat-modal v-model="skipTurnModalVisible" @confirm="skipTurn">
+      <span>确认结束绘画么(将直接跳至评价阶段)？</span>
+    </flat-modal>
   </div>
 </template>
 
@@ -247,7 +255,7 @@ import Avatar from '@components/Avatar.vue'
 import Carousel from '@components/Carousel.vue'
 import MessageBox from '@components/MessageBox.vue'
 
-import { reactive, ref, nextTick, watch, computed, inject, ComponentInternalInstance, getCurrentInstance, onBeforeUnmount } from 'vue'
+import { reactive, ref, nextTick, onMounted, watch, computed, inject, ComponentInternalInstance, getCurrentInstance, onBeforeUnmount } from 'vue'
 import router from '@router/index'
 import { useRoute } from 'vue-router'
 import { stateName } from '@/store'
@@ -259,16 +267,18 @@ const ws = vm!.appContext.config.globalProperties.$ws
 const globalState = <GlobalStateT>inject(stateName)
 const route = useRoute()
 
+// 当前组件是否已经加载完成
+let mounted = false
 /**
  * 0：等待玩家进入 ?s
- * 1：玩家绘画/查看玩家绘画 150s
+ * 1：玩家绘画/查看玩家绘画 120s
  * 2：玩家选题/等待玩家选题 30s
  * 3：公布答案并评价/查看评价 15s
  * 4：玩家放弃出题/放弃出题 10s
  * 5：游戏结束 30s
  */
 const roomState = ref<number>(0)
-const stateDelay: number[] = [0, 50, 15, 15, 10, 30]
+const stateDelay: number[] = [0, 120, 15, 15, 10, 30]
 const curLimitTime = computed(() => {
   return stateDelay[roomState.value]
 })
@@ -279,6 +289,9 @@ const drawer = ref<number>(JSON.parse(params.drawer as string))
 const drawerName = ref<string>('')
 const players: PlayerT[] = JSON.parse(params.players as string)
 const roomInfo: RoomT = JSON.parse(params.roomInfo as string)
+
+document.title = roomInfo.roomName
+
 const isDrawer = computed(() => {
   return drawer.value === globalState.userId
 })
@@ -297,6 +310,7 @@ const timer = ref<null | timerT>(null)
 const setRestTime = (date) => {
   nextTick(() => {
     if (typeof date === 'number') {
+      console.trace(Date.now(), date)
       const delay = (Date.now() - date) / 1000;
       (timer.value as timerT).setRestTime(curLimitTime.value - parseInt(delay + ''))
     }
@@ -365,7 +379,7 @@ ws.subscribeEvent('quitRoom', (resp: FreeObjT) => {
 })
 
 // 房间只剩下一个人的时候，房间状态变为等待中，当前绘画者id置为-1，唯一一名玩家的分数重置为0
-ws.subscribeEvent('waitPlayer', (resp: FreeObjT) => {
+ws.subscribeEvent('waitPlayer', () => {
   roomState.value = 0
   drawer.value = -1
   playerList[0].point = 0
@@ -384,7 +398,7 @@ ws.subscribeEvent('waitChooseQuestion', (resp: FreeObjT) => {
     (timer.value as timerT).resetTimer
   } else {
     roomState.value = 2
-    if (getRestTime) {
+    if (!getRestTime) {
       setRestTime(resp.data)
       getRestTime = true
     }
@@ -427,7 +441,7 @@ ws.subscribeEvent('waitGiveUp', (resp: FreeObjT) => {
     (timer.value as timerT).resetTimer
   } else {
     roomState.value = 4
-    if (getRestTime) {
+    if (!getRestTime) {
       setRestTime(resp.data)
       getRestTime = true
     }
@@ -440,7 +454,7 @@ ws.subscribeEvent('waitDrawing', (resp: FreeObjT) => {
     (timer.value as timerT).resetTimer
   } else {
     roomState.value = 1
-    if (getRestTime) {
+    if (!getRestTime) {
       setRestTime(resp.data)
       getRestTime = true
     }
@@ -497,18 +511,41 @@ const onChangeWeight = (weight: number) => {
 }
 interface boardT extends HTMLElement {
   clearCanvas(): void
+  repealPath(): void
   drawCanvas(info: string): void
+  clearHistory(): void
 }
 const board = ref<null | boardT>(null)
+// 玩家中途加入获取路径时，画布可能还没有挂载，因此需要先把路径储存，延迟绘制
+let delayDrawPath: string[] = []
+
+onMounted(() => {
+  mounted = true
+  delayDrawPath.forEach((path: string) => {
+    (board.value as boardT).drawCanvas(path)
+  })
+  delayDrawPath = []
+})
 
 // 清除画板
 const clearBoard = () => {
   (board.value as boardT).clearCanvas()
   ws.send({ type: 'clearCanvas', roomId: roomInfo.roomId })
 }
-ws.subscribeEvent('clearCanvas', (resp: FreeObjT) => {
+ws.subscribeEvent('clearCanvas', () => {
   (board.value as boardT).clearCanvas()
 })
+
+// 画板回退上一步
+const repeal = () => {
+  (board.value as boardT).repealPath()
+  ws.send({ type: 'repealCanvas', roomId: roomInfo.roomId })
+}
+
+ws.subscribeEvent('repealCanvas', () => {
+  (board.value as boardT).repealPath()
+})
+
 // 用户绘画的时候发送路径
 const onDrawing = (drawingInfo: FreeObjT) => {
   ws.send({
@@ -519,17 +556,35 @@ const onDrawing = (drawingInfo: FreeObjT) => {
 }
 // 接收到路径的时候进行绘画
 ws.subscribeEvent('sendCanvas', (resp: FreeObjT) => {
-  (board.value as boardT).drawCanvas(resp.data)
+  if (mounted) {
+    (board.value as boardT).drawCanvas(resp.data)
+  } else {
+    delayDrawPath.push(...resp.data)
+  }
 })
+
+const skipTurnModalVisible = ref<boolean>(false)
+// 玩家画到一半，直接跳过，进行评价
+const skipTurn = () => {
+  skipTurnModalVisible.value = false
+  ws.send({
+    type: 'evaluate',
+    roomId: roomInfo.roomId
+  })
+}
 
 // 玩家中途加入，有可能收到：canvas路径、当前绘画者
 ws.subscribeEvent('joinInMiddle', (resp: FreeObjT) => {
   drawer.value = resp.drawer
   drawerName.value = getPlayerName(drawer.value)
   const pathList = resp.data
-  pathList.forEach((path: string) => {
-    (board.value as boardT).drawCanvas(path)
-  })
+  if (mounted) {
+    pathList.forEach((path: string) => {
+      (board.value as boardT).drawCanvas(path)
+    })
+  } else {
+    delayDrawPath.push(...pathList)
+  }
 })
 
 // 每次发送新消息，信息栏都滚动到最底部
@@ -549,7 +604,7 @@ ws.subscribeEvent('evaluate', (resp: FreeObjT) => {
     (timer.value as timerT).resetTimer
   } else {
     roomState.value = 3
-    if (getRestTime) {
+    if (!getRestTime) {
       setRestTime(resp.data)
       getRestTime = true
     }
@@ -597,6 +652,7 @@ watch(() => roomState.value, (newState) => {
       isEvaluate.value = false
       curAnswer.value = ''
       guessRight.value = false
+      break
     }
   }
 })
@@ -644,7 +700,7 @@ ws.subscribeEvent('endOfGame', (resp: FreeObjT) => {
     (timer.value as timerT).resetTimer
   } else {
     roomState.value = 5
-    if (getRestTime) {
+    if (!getRestTime) {
       setRestTime(resp.data)
       getRestTime = true
     }
@@ -695,7 +751,6 @@ onBeforeUnmount(() => {
       }
       case 2: {
         if (isDrawer.value) {
-          console.log('2, nextPlayer')
           ws.send({ type: 'nextPlayer', roomId: roomInfo.roomId, send: globalState.userId })
         }
         break
